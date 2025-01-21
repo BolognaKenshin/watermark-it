@@ -1,7 +1,7 @@
 import tkinter as tk
 from tkinter import filedialog, PhotoImage
 from tkinterdnd2 import TkinterDnD, DND_FILES
-from PIL import Image, ImageTk
+from PIL import Image, ImageTk, ImageDraw
 import magic
 
 main_window = TkinterDnD.Tk()
@@ -37,6 +37,10 @@ def upload_image(photo_canvas):
             image = Image.open(uploaded_image_path)
             image_width, image_height = image.size
             photo_canvas.config(width=image_width, height=image_height)
+
+            # pillow_image is meant to be original_image stored for drawing and undoing changes
+            photo_canvas.pillow_image = image
+
             photo = ImageTk.PhotoImage(image)
             photo_canvas.image = photo
             photo_canvas.create_image(2, 2, image=photo, anchor="nw")
@@ -61,6 +65,10 @@ def on_drop(event, photo_canvas):
             image = Image.open(file_path)
             image_width, image_height = image.size
             photo_canvas.config(width=image_width, height=image_height)
+
+            # pillow_image is meant to be original_image stored for drawing and undoing changes
+            photo_canvas.pillow_image = image
+
             photo = ImageTk.PhotoImage(image)
             photo_canvas.image = photo
             photo_canvas.create_image(2, 2, image=photo, anchor="nw")
@@ -93,9 +101,19 @@ def text_options():
     text_window.minsize(width=250, height=600)
     text_box = tk.Entry(text_window)
     text_box.grid(row=0, column=0, padx=10)
-    text_submit = tk.Button(text_window, text="Add Text")
+    text_submit = tk.Button(text_window, text="Add Text", command=lambda: add_text(text_box.get()))
     text_submit.grid(row=0, column=1, padx=10)
     window_dict["watermark_window"] = text_window
+
+
+def add_text(text):
+    new_image = photo_canvas.pillow_image.copy()
+    draw = ImageDraw.Draw(new_image)
+    draw.text((10, 10), text=text, fill="black")
+    updated_image = ImageTk.PhotoImage(new_image)
+    photo_canvas.display_image = updated_image
+    photo_canvas.create_image(2, 2, image=updated_image, anchor="nw")
+
 
 # Generated the logo options window
 def logo_options():

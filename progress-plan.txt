@@ -4,3 +4,14 @@
  - Built main page again
  - Rebuilt upload image function
  - Images determine size of canvas, are centered
+
+
+Options for text:
+- Add text
+- Color
+- Size
+- Font
+- Position
+- Tile
+- Tilt/rotate
+- Undo changes
