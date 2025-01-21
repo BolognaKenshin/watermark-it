@@ -1,0 +1,6 @@
+1/28/25
+
+ - Began rebuilding app
+ - Built main page again
+ - Rebuilt upload image function
+ - Images determine size of canvas, are centered
