@@ -1,7 +1,8 @@
+import os
 import tkinter as tk
-from tkinter import filedialog, PhotoImage
+from tkinter import filedialog, font, ttk
 from tkinterdnd2 import TkinterDnD, DND_FILES
-from PIL import Image, ImageTk, ImageDraw
+from PIL import Image, ImageTk, ImageDraw, ImageFont
 import magic
 
 main_window = TkinterDnD.Tk()
@@ -24,12 +25,15 @@ main_window.grid_columnconfigure(index=2, weight=1)
 # Adjusts canvas to size of image, then displays image - Connected to "Upload" button
 # Function will close other open windows when called
 def upload_image(photo_canvas):
-    if window_dict["watermark_window"]:
+    if window_dict["watermark_window"] or window_dict["text_window"]:
         window_dict["watermark_window"].destroy()
-    if window_dict["text_window"]:
         window_dict["text_window"].destroy()
-    if window_dict["logo_window"]:
-        window_dict["logo_window"].destroy()
+    if window_dict["text_window"] or window_dict["text_window"]:
+        window_dict["watermark_window"].destroy()
+        window_dict["text_window"].destroy()
+    if window_dict["logo_window"] or window_dict["text_window"]:
+        window_dict["watermark_window"].destroy()
+        window_dict["text_window"].destroy()
     uploaded_image_path = tk.filedialog.askopenfilename()
     if uploaded_image_path:
         file_type = magic.from_file(uploaded_image_path, mime=True)
@@ -52,12 +56,15 @@ def upload_image(photo_canvas):
 # Same as upload_image function, but works with drag-and-drop
 # Function will close other open windows when called
 def on_drop(event, photo_canvas):
-    if window_dict["watermark_window"]:
+    if window_dict["watermark_window"] or window_dict["text_window"]:
         window_dict["watermark_window"].destroy()
-    elif window_dict["text_window"]:
         window_dict["text_window"].destroy()
-    elif window_dict["logo_window"]:
-        window_dict["logo_window"].destroy()
+    if window_dict["text_window"] or window_dict["text_window"]:
+        window_dict["watermark_window"].destroy()
+        window_dict["text_window"].destroy()
+    if window_dict["logo_window"] or window_dict["text_window"]:
+        window_dict["watermark_window"].destroy()
+        window_dict["text_window"].destroy()
     file_path = event.data.strip("{}")
     if file_path:
         file_type = magic.from_file(file_path, mime=True)
@@ -92,30 +99,54 @@ def watermark_options():
     add_text_button.grid(column=0, row=1, padx=75, pady=25)
     add_logo_button.grid(column=1, row=1, padx=75, pady=25)
 
-# Generates the text options window
+
+# Generates the text options window - Stores them in dictionary, passes to add_text() via text_submit button
 def text_options():
     if window_dict["watermark_window"]:
         window_dict["watermark_window"].destroy()
     text_window = tk.Toplevel(main_window)
+    window_dict["text_window"] = text_window
     text_window.title("Text Options")
     text_window.minsize(width=250, height=600)
+    # Text Entry
     text_box = tk.Entry(text_window)
-    text_box.grid(row=0, column=0, padx=10)
-    text_submit = tk.Button(text_window, text="Add Text", command=lambda: add_text(text_box.get()))
-    text_submit.grid(row=0, column=1, padx=10)
-    window_dict["watermark_window"] = text_window
+    text_box.grid(row=0, column=0, sticky="w", padx=10)
+    text_submit = tk.Button(text_window, text="Add Text", command=lambda: add_text(user_text_selections,
+                                                                                   available_fonts,
+                                                                                   font_display_names))
+    text_submit.grid(row=0, column=1, sticky="w", padx=10)
+    # Font Selection
+    available_fonts = [font for font in os.listdir("./fonts") if font.endswith((".ttf", ".otf"))]
+    font_display_names = [font.replace(".ttf", "").replace(".otf", "") for font in available_fonts]
+    font_menu = ttk.Combobox(text_window, values=font_display_names, height=10)
+    for font in available_fonts:
+        font_menu.insert(tk.END, font)
+    font_menu.set("Boldness")
+    font_menu.grid(row=2, column=0, sticky="w", padx=10, pady=15)
+
+    # Stores the widgets as values, so they can be passed to add_text and retrieved via .get()
+    user_text_selections = {
+        "text": text_box,
+        "font": font_menu,
+    }
 
 
-def add_text(text):
+
+# Adding formatted text - Received from text_options()
+def add_text(text_options, fonts, font_display_names):
+    text = text_options["text"].get()
+    font = text_options["font"].get()
+    font_index = font_display_names.index(font)
+    font_file = ImageFont.truetype(f'fonts/{fonts[font_index]}')
     new_image = photo_canvas.pillow_image.copy()
     draw = ImageDraw.Draw(new_image)
-    draw.text((10, 10), text=text, fill="black")
+    draw.text((10, 10), text=text, font=font_file, fill="black")
     updated_image = ImageTk.PhotoImage(new_image)
     photo_canvas.display_image = updated_image
     photo_canvas.create_image(2, 2, image=updated_image, anchor="nw")
 
 
-# Generated the logo options window
+# Generated the logo options window - Contains the window's widgets
 def logo_options():
     if window_dict["watermark_window"]:
         window_dict["watermark_window"].destroy()

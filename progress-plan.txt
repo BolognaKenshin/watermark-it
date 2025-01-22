@@ -7,10 +7,10 @@
 
 
 Options for text:
-- Add text
+- Add text - Done 1/21
 - Color
 - Size
-- Font
+- Font - Done 1/21
 - Position
 - Tile
 - Tilt/rotate
