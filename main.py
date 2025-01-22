@@ -131,7 +131,6 @@ def text_options():
     }
 
 
-
 # Adding formatted text - Received from text_options()
 def add_text(text_options, fonts, font_display_names):
     text = text_options["text"].get()
