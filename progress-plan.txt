@@ -17,7 +17,7 @@ Options for text:
 - Opacity - Done 1/22
 - Size - Done 1/22
 - Font - Done 1/21
-- Rotation
+- Rotation - Done 1/23
 - Position - Done 1/23
 - Tile
 - Undo changes
