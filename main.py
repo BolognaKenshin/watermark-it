@@ -2,12 +2,15 @@ import os
 import tkinter as tk
 from tkinter import filedialog, font, ttk
 from tkinterdnd2 import TkinterDnD, DND_FILES
+from tkinter.colorchooser import askcolor
 from PIL import Image, ImageTk, ImageDraw, ImageFont
 import magic
 
 main_window = TkinterDnD.Tk()
 main_window.title("Carl's Watermark App")
 main_window.minsize(width=1200, height=700)
+
+current_color = (0, 0, 0, 255)
 
 window_dict = {
 "watermark_window": None,
@@ -101,45 +104,68 @@ def watermark_options():
 
 
 # Generates the text options window - Stores them in dictionary, passes to add_text() via text_submit button
+# Color gets passed separate from the dictionary as the askcolor box doesn't pass values the same way
 def text_options():
+    global current_color
     if window_dict["watermark_window"]:
         window_dict["watermark_window"].destroy()
     text_window = tk.Toplevel(main_window)
     window_dict["text_window"] = text_window
     text_window.title("Text Options")
     text_window.minsize(width=250, height=600)
+
     # Text Entry
     text_box = tk.Entry(text_window)
     text_box.grid(row=0, column=0, sticky="w", padx=10)
     text_submit = tk.Button(text_window, text="Add Text", command=lambda: add_text(user_text_selections,
+                                                                                   current_color,
                                                                                    available_fonts,
                                                                                    font_display_names))
     text_submit.grid(row=0, column=1, sticky="w", padx=10)
+
     # Font Selection
     available_fonts = [font for font in os.listdir("./fonts") if font.endswith((".ttf", ".otf"))]
     font_display_names = [font.replace(".ttf", "").replace(".otf", "") for font in available_fonts]
-    font_menu = ttk.Combobox(text_window, values=font_display_names, height=10)
+    font_menu = ttk.Combobox(text_window, values=font_display_names, height=10, state="readonly")
     for font in available_fonts:
         font_menu.insert(tk.END, font)
     font_menu.set("Boldness")
-    font_menu.grid(row=2, column=0, sticky="w", padx=10, pady=15)
+    font_menu.grid(row=1, column=0, sticky="w", padx=10, pady=15)
+    font_sizes = [f'{str(size)}px' for size in range(10, 401, 2)]
+    font_size_menu = ttk.Combobox(text_window, values=font_sizes, height=10, state="readonly")
+    font_size_menu.set("10px")
+    font_size_menu.grid(row=2, column=0, padx=10, pady=15)
+
+    # Color Selection - Updates global current_color variable, passes it to add_text() in text_submit button
+    add_color_button = tk.Button(text_window, text="Add Color", command=select_color)
+    add_color_button.grid(row=3, column=0, sticky="w", padx=10, pady=15)
+    opacity_label = tk.Label(text_window, text="Opacity")
+    opacity_slider = tk.Scale(text_window, from_=0, to=255, orient="horizontal")
+    opacity_slider.set(255)
+    opacity_label.grid(row=4, column=0)
+    opacity_slider.grid(row=5, column=0)
 
     # Stores the widgets as values, so they can be passed to add_text and retrieved via .get()
     user_text_selections = {
         "text": text_box,
         "font": font_menu,
+        "font_size": font_size_menu,
+        "opacity": opacity_slider,
     }
 
 
 # Adding formatted text - Received from text_options()
-def add_text(text_options, fonts, font_display_names):
+def add_text(text_options, current_color, fonts, font_display_names):
     text = text_options["text"].get()
     font = text_options["font"].get()
+    font_size = int(text_options["font_size"].get().strip("px"))
+    opacity = text_options["opacity"].get()
+    text_color = (current_color[0], current_color[1], current_color[2], opacity)
     font_index = font_display_names.index(font)
-    font_file = ImageFont.truetype(f'fonts/{fonts[font_index]}')
-    new_image = photo_canvas.pillow_image.copy()
+    font_file = ImageFont.truetype(f'fonts/{fonts[font_index]}', size=font_size)
+    new_image = photo_canvas.pillow_image.copy().convert("RGBA")
     draw = ImageDraw.Draw(new_image)
-    draw.text((10, 10), text=text, font=font_file, fill="black")
+    draw.text((10, 10), text=text, font=font_file, fill=text_color)
     updated_image = ImageTk.PhotoImage(new_image)
     photo_canvas.display_image = updated_image
     photo_canvas.create_image(2, 2, image=updated_image, anchor="nw")
@@ -153,6 +179,19 @@ def logo_options():
     logo_window.title("Text Options")
     logo_window.minsize(width=250, height=600)
     window_dict["logo_window"] = logo_window
+
+# Select a color for text or logo
+def select_color():
+    global current_color
+    color = askcolor()[0]
+    current_color = (color[0], color[1], color[2], 255)
+    print(current_color)
+    window_dict["text_window"].lift()
+
+
+
+
+
 
 # Main App - Components
 my_label = tk.Label(text="Carl's Watermark App", font=("Arial", 24, "bold"))
