@@ -114,7 +114,9 @@ def text_options():
     text_window.title("Text Options")
     text_window.minsize(width=250, height=600)
 
-    # Text Entry
+    # Text Entry - Position
+    photo_width = photo_canvas.winfo_width()
+    photo_height = photo_canvas.winfo_height()
     text_box = tk.Entry(text_window)
     text_box.grid(row=0, column=0, sticky="w", padx=10)
     text_submit = tk.Button(text_window, text="Add Text", command=lambda: add_text(user_text_selections,
@@ -123,6 +125,19 @@ def text_options():
                                                                                    font_display_names))
     text_submit.grid(row=0, column=1, sticky="w", padx=10)
 
+    font_sizes = [f'{str(size)}px' for size in range(10, 401, 2)]
+    font_size_menu = ttk.Combobox(text_window, values=font_sizes, height=10, state="readonly")
+    font_size_menu.set("15px")
+
+    text_x_label = tk.Label(text_window, text="X Coordinates")
+    text_x_slider = tk.Scale(text_window, from_=0, to=photo_width, orient="horizontal", showvalue=False)
+    text_y_label = tk.Label(text_window, text="Y Coordinates")
+    text_y_slider = tk.Scale(text_window, from_=17, to=photo_height, orient="horizontal", showvalue=False)
+    text_x_label.grid(row=1, column=0, sticky="w", padx=10)
+    text_x_slider.grid(row=2, column=0, sticky="w", padx=10)
+    text_y_label.grid(row=3, column=0, sticky="w", padx=10)
+    text_y_slider.grid(row=4, column=0, sticky="w", padx=10)
+
     # Font Selection
     available_fonts = [font for font in os.listdir("./fonts") if font.endswith((".ttf", ".otf"))]
     font_display_names = [font.replace(".ttf", "").replace(".otf", "") for font in available_fonts]
@@ -130,20 +145,24 @@ def text_options():
     for font in available_fonts:
         font_menu.insert(tk.END, font)
     font_menu.set("Boldness")
-    font_menu.grid(row=1, column=0, sticky="w", padx=10, pady=15)
-    font_sizes = [f'{str(size)}px' for size in range(10, 401, 2)]
-    font_size_menu = ttk.Combobox(text_window, values=font_sizes, height=10, state="readonly")
-    font_size_menu.set("10px")
-    font_size_menu.grid(row=2, column=0, padx=10, pady=15)
+    font_menu.grid(row=5, column=0, sticky="w", padx=10, pady=15)
 
-    # Color Selection - Updates global current_color variable, passes it to add_text() in text_submit button
+    font_size_menu.grid(row=6, column=0, padx=10)
+
+    # Text Rotation
+    text_angle_label = tk.Label(text_window, text="Text Angle")
+    text_angle_slider = tk.Scale(text_window, from_=-180, to=180, orient="horizontal")
+    text_angle_label.grid(row=7, column=0, padx=10, sticky="w")
+    text_angle_slider.grid(row=8, column=0, padx=10, sticky="w")
+
+    # Color - Opacity Selection - Updates global current_color variable, passes it to add_text() in text_submit button
     add_color_button = tk.Button(text_window, text="Add Color", command=select_color)
-    add_color_button.grid(row=3, column=0, sticky="w", padx=10, pady=15)
+    add_color_button.grid(row=9, column=0, sticky="w", padx=10, pady=15)
     opacity_label = tk.Label(text_window, text="Opacity")
-    opacity_slider = tk.Scale(text_window, from_=0, to=255, orient="horizontal")
+    opacity_slider = tk.Scale(text_window, from_=0, to=255, orient="horizontal", showvalue=False)
     opacity_slider.set(255)
-    opacity_label.grid(row=4, column=0)
-    opacity_slider.grid(row=5, column=0)
+    opacity_label.grid(row=10, column=0, sticky="w", padx=10)
+    opacity_slider.grid(row=11, column=0, sticky="w", padx=10)
 
     # Stores the widgets as values, so they can be passed to add_text and retrieved via .get()
     user_text_selections = {
@@ -151,6 +170,9 @@ def text_options():
         "font": font_menu,
         "font_size": font_size_menu,
         "opacity": opacity_slider,
+        "x": text_x_slider,
+        "y": text_y_slider,
+        "angle": text_angle_slider,
     }
 
 
@@ -158,15 +180,19 @@ def text_options():
 def add_text(text_options, current_color, fonts, font_display_names):
     text = text_options["text"].get()
     font = text_options["font"].get()
+    x = text_options["x"].get()
+    y = text_options["y"].get()
     font_size = int(text_options["font_size"].get().strip("px"))
+    angle = int(text_options["angle"].get())
     opacity = text_options["opacity"].get()
     text_color = (current_color[0], current_color[1], current_color[2], opacity)
     font_index = font_display_names.index(font)
     font_file = ImageFont.truetype(f'fonts/{fonts[font_index]}', size=font_size)
-    new_image = photo_canvas.pillow_image.copy().convert("RGBA")
+    new_image = Image.new("RGBA", photo_canvas.pillow_image.size, (0, 0, 0 ,0))
     draw = ImageDraw.Draw(new_image)
-    draw.text((10, 10), text=text, font=font_file, fill=text_color)
-    updated_image = ImageTk.PhotoImage(new_image)
+    draw.text(xy=(x, (photo_canvas.winfo_height() - y)), text=text, font=font_file, fill=text_color)
+    rotated_image = apply_angle(new_image, angle)
+    updated_image = ImageTk.PhotoImage(rotated_image)
     photo_canvas.display_image = updated_image
     photo_canvas.create_image(2, 2, image=updated_image, anchor="nw")
 
@@ -185,13 +211,13 @@ def select_color():
     global current_color
     color = askcolor()[0]
     current_color = (color[0], color[1], color[2], 255)
-    print(current_color)
     window_dict["text_window"].lift()
 
+# Rotation
 
-
-
-
+def apply_angle(image, angle):
+    rotated_image = image.rotate(angle, expand=False)
+    return rotated_image
 
 # Main App - Components
 my_label = tk.Label(text="Carl's Watermark App", font=("Arial", 24, "bold"))
@@ -210,7 +236,6 @@ drag_label.grid(column=1, row=2)
 or_label.grid(column=1, row=3)
 upload_button.grid(column=1, row=4)
 photo_canvas.grid(column=1, row=5)
-
 
 
 main_window.drop_target_register(DND_FILES)

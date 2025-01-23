@@ -18,7 +18,7 @@ Options for text:
 - Size - Done 1/22
 - Font - Done 1/21
 - Rotation
-- Position
+- Position - Done 1/23
 - Tile
-- Tilt/rotate
 - Undo changes
+- Add Copyright to Text
