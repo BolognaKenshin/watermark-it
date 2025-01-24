@@ -178,6 +178,7 @@ def text_options():
 
 # Adding formatted text - Received from text_options()
 def add_text(text_options, current_color, fonts, font_display_names):
+    global image_id
     text = text_options["text"].get()
     font = text_options["font"].get()
     x = text_options["x"].get()
@@ -193,7 +194,7 @@ def add_text(text_options, current_color, fonts, font_display_names):
     draw.text(xy=(new_image.width / 2, new_image.height / 2), text=text, font=font_file, fill=text_color, anchor="mm")
     rotated_image = apply_angle(new_image, angle)
     updated_image = ImageTk.PhotoImage(rotated_image)
-    photo_canvas.display_image = updated_image
+    photo_canvas.text_image = updated_image
     photo_canvas.create_image((x + ((font_size * .5) * (len(text) / 2)), (photo_canvas.winfo_height() - y)), image=updated_image)
 
 
@@ -219,6 +220,9 @@ def apply_angle(image, angle):
     rotated_image = image.rotate(angle, expand=False)
     return rotated_image
 
+# Drag-And-Drop Text
+
+
 # Main App - Components
 my_label = tk.Label(text="Carl's Watermark App", font=("Arial", 24, "bold"))
 landscape_image = Image.open("./sunset-golden.jpg")
@@ -229,6 +233,8 @@ or_label = tk.Label(text="Or", font=("Arial", 12))
 photo_canvas = tk.Canvas(bg="black", width=landscape_width, height=landscape_height)
 upload_button = tk.Button(text="Upload", font=("Arial", 14), command=lambda: upload_image(photo_canvas))
 photo_canvas.create_image(2, 2, image=landscape_photo, anchor="nw")
+
+
 
 # Main App - Grid
 my_label.grid(column=1, row=0)
