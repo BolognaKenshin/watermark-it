@@ -11,6 +11,12 @@
  - Added opacity capabilities
 
 
+1/24
+ - Repaired rotation functionality for the most part
+ - Pixels still present during random rotations, fixed issue where text was circling
+   screen if angle applied from any position besides photo center.
+
+
 Options for text:
 - Add text - Done 1/21
 - Color - Done 1/22

@@ -127,12 +127,12 @@ def text_options():
 
     font_sizes = [f'{str(size)}px' for size in range(10, 401, 2)]
     font_size_menu = ttk.Combobox(text_window, values=font_sizes, height=10, state="readonly")
-    font_size_menu.set("15px")
+    font_size_menu.set("14px")
 
     text_x_label = tk.Label(text_window, text="X Coordinates")
     text_x_slider = tk.Scale(text_window, from_=0, to=photo_width, orient="horizontal", showvalue=False)
     text_y_label = tk.Label(text_window, text="Y Coordinates")
-    text_y_slider = tk.Scale(text_window, from_=17, to=photo_height, orient="horizontal", showvalue=False)
+    text_y_slider = tk.Scale(text_window, from_=6, to=photo_height, orient="horizontal", showvalue=False)
     text_x_label.grid(row=1, column=0, sticky="w", padx=10)
     text_x_slider.grid(row=2, column=0, sticky="w", padx=10)
     text_y_label.grid(row=3, column=0, sticky="w", padx=10)
@@ -188,13 +188,13 @@ def add_text(text_options, current_color, fonts, font_display_names):
     text_color = (current_color[0], current_color[1], current_color[2], opacity)
     font_index = font_display_names.index(font)
     font_file = ImageFont.truetype(f'fonts/{fonts[font_index]}', size=font_size)
-    new_image = Image.new("RGBA", photo_canvas.pillow_image.size, (0, 0, 0 ,0))
+    new_image = Image.new("RGBA", size=(font_size * int((len(text) + 1) * .6), font_size * int((len(text) + 1) * .6)), color=(0, 0, 0 ,0))
     draw = ImageDraw.Draw(new_image)
-    draw.text(xy=(x, (photo_canvas.winfo_height() - y)), text=text, font=font_file, fill=text_color)
+    draw.text(xy=(new_image.width / 2, new_image.height / 2), text=text, font=font_file, fill=text_color, anchor="mm")
     rotated_image = apply_angle(new_image, angle)
     updated_image = ImageTk.PhotoImage(rotated_image)
     photo_canvas.display_image = updated_image
-    photo_canvas.create_image(2, 2, image=updated_image, anchor="nw")
+    photo_canvas.create_image((x + ((font_size * .5) * (len(text) / 2)), (photo_canvas.winfo_height() - y)), image=updated_image)
 
 
 # Generated the logo options window - Contains the window's widgets
