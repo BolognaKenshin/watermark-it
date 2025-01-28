@@ -124,7 +124,8 @@ def text_options():
                                                                                    available_fonts,
                                                                                    font_display_names))
     text_submit.grid(row=0, column=1, sticky="w", padx=10)
-
+    copyright_button = tk.Button(text_window, text="Add ©", command=lambda: add_copyright(text_box))
+    copyright_button.grid(row=1, column=1, sticky="w", padx=10)
     font_sizes = [f'{str(size)}px' for size in range(10, 401, 2)]
     font_size_menu = ttk.Combobox(text_window, values=font_sizes, height=10, state="readonly")
     font_size_menu.set("14px")
@@ -175,10 +176,21 @@ def text_options():
         "angle": text_angle_slider,
     }
 
+# Add Copyright - Changes a copyright attribute of the photo_canvas object, to be referenced in text_options
+def add_copyright(text_box):
+    text = text_box.get()
+    if photo_canvas.copyright == False:
+        photo_canvas.copyright = True
+        text_box.insert(tk.END, " ©")
+    elif photo_canvas.copyright == True:
+        text = text.strip(" ©")
+        text_box.delete(0, tk.END)
+        text_box.insert(0, text)
+        photo_canvas.copyright = False
+
 
 # Adding formatted text - Received from text_options()
 def add_text(text_options, current_color, fonts, font_display_names):
-    global image_id
     text = text_options["text"].get()
     font = text_options["font"].get()
     x = text_options["x"].get()
@@ -195,8 +207,9 @@ def add_text(text_options, current_color, fonts, font_display_names):
     rotated_image = apply_angle(new_image, angle)
     updated_image = ImageTk.PhotoImage(rotated_image)
     photo_canvas.text_image = updated_image
-    photo_canvas.create_image((x + ((font_size * .5) * (len(text) / 2)), (photo_canvas.winfo_height() - y)), image=updated_image)
-
+    photo_canvas.image_id = photo_canvas.create_image((x + ((font_size * .5) * (len(text) / 2)), (photo_canvas.winfo_height() - y)), image=updated_image)
+    create_bounding_box()
+    print(photo_canvas.copyright)
 
 # Generated the logo options window - Contains the window's widgets
 def logo_options():
@@ -217,10 +230,39 @@ def select_color():
 # Rotation
 
 def apply_angle(image, angle):
-    rotated_image = image.rotate(angle, expand=False)
+    rotated_image = image.rotate(angle, resample=Image.Resampling.BICUBIC, expand=False)
     return rotated_image
 
 # Drag-And-Drop Text
+# Creates the bounding-box used to register clicks
+def create_bounding_box():
+    if photo_canvas.bbox_id:
+        photo_canvas.delete(photo_canvas.bbox_id)
+    bbox = photo_canvas.bbox(photo_canvas.image_id)
+    if bbox:
+        x1, y1, x2, y2 = bbox
+        photo_canvas.bbox_id = photo_canvas.create_rectangle(x1, y1, x2, y2, fill="", width=0)
+        photo_canvas.tag_bind(photo_canvas.bbox_id, "<B1-Motion>", clicked_text)
+
+# Recognizes when user clicks their mouse within the bounding box and holds the button down
+def clicked_text(event):
+    x = event.x
+    y = event.y
+    if photo_canvas.bbox_id:
+        bbox = photo_canvas.bbox(photo_canvas.image_id)
+        x1, y1, x2, y2 = bbox
+        if x >= x1 and x <= x2 and y >= y1 and y <= y2:
+            photo_canvas.tag_bind(photo_canvas.bbox_id, "<ButtonRelease-1>", move_clicked_text)
+
+# Moves the text to the new space where the user released their mouse button
+def move_clicked_text(event):
+    x = event.x
+    y = event.y
+    new_text_image = photo_canvas.text_image
+    photo_canvas.delete(photo_canvas.image_id)
+    photo_canvas.image_id = photo_canvas.create_image(x, y, image=new_text_image)
+    create_bounding_box()
+    window_dict["text_window"].lift()
 
 
 # Main App - Components
@@ -232,9 +274,9 @@ drag_label = tk.Label(text="Drag your image", font=("Arial", 18))
 or_label = tk.Label(text="Or", font=("Arial", 12))
 photo_canvas = tk.Canvas(bg="black", width=landscape_width, height=landscape_height)
 upload_button = tk.Button(text="Upload", font=("Arial", 14), command=lambda: upload_image(photo_canvas))
-photo_canvas.create_image(2, 2, image=landscape_photo, anchor="nw")
-
-
+photo_canvas.image_id = photo_canvas.create_image(2, 2, image=landscape_photo, anchor="nw")
+photo_canvas.bbox_id = None
+photo_canvas.copyright = False
 
 # Main App - Grid
 my_label.grid(column=1, row=0)

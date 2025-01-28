@@ -15,7 +15,13 @@
  - Repaired rotation functionality for the most part
  - Pixels still present during random rotations, fixed issue where text was circling
    screen if angle applied from any position besides photo center.
+ - Working on Drag and Drop, program registers clicks in a border box around text.
+ - Need to continue to add drag and drop
 
+1/28
+ - Completed drag-and-drop, works functionally for the most part.
+ - Repaired rotation, adding Image.Resampling.BICUBIC fixed the choppy pixelation when rotated.
+ - Added a functional copyright button, adds or removes a "©" symbol.
 
 Options for text:
 - Add text - Done 1/21
@@ -25,6 +31,7 @@ Options for text:
 - Font - Done 1/21
 - Rotation - Done 1/23
 - Position - Done 1/23
+- Drag and drop text - Done 1/27
 - Tile
 - Undo changes
-- Add Copyright to Text
+- Add Copyright to Text - Done 1/27
