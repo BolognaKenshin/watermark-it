@@ -150,30 +150,41 @@ def text_options():
 
     font_size_menu.grid(row=6, column=0, padx=10)
 
+    # Tiling
+
+    single_tile_button = tk.Button(text_window, text="•", font=(20), width=4, height=2, command=lambda: user_text_selections.update({"tiling": "single"}))
+    square_tile_button = tk.Button(text_window, text="•   •\n•   •", font=(20), width=4, height=2, command=lambda: user_text_selections.update({"tiling": "square"}))
+    diamond_tile_button = tk.Button(text_window, text="•\n•       •\n•", font=(20), width=4, height=2, command=lambda: user_text_selections.update({"tiling": "diamond"}))
+    single_tile_button.grid(row=7, column=0, padx=10, pady=10)
+    square_tile_button.grid(row=7, column=1, padx=10, pady=10)
+    diamond_tile_button.grid(row=7, column=2, padx=10, pady=10)
+
     # Text Rotation
     text_angle_label = tk.Label(text_window, text="Text Angle")
     text_angle_slider = tk.Scale(text_window, from_=-180, to=180, orient="horizontal")
-    text_angle_label.grid(row=7, column=0, padx=10, sticky="w")
-    text_angle_slider.grid(row=8, column=0, padx=10, sticky="w")
+    text_angle_label.grid(row=8, column=0, padx=10, sticky="w")
+    text_angle_slider.grid(row=9, column=0, padx=10, sticky="w")
 
     # Color - Opacity Selection - Updates global current_color variable, passes it to add_text() in text_submit button
     add_color_button = tk.Button(text_window, text="Add Color", command=select_color)
-    add_color_button.grid(row=9, column=0, sticky="w", padx=10, pady=15)
+    add_color_button.grid(row=10, column=0, sticky="w", padx=10, pady=15)
     opacity_label = tk.Label(text_window, text="Opacity")
     opacity_slider = tk.Scale(text_window, from_=0, to=255, orient="horizontal", showvalue=False)
     opacity_slider.set(255)
-    opacity_label.grid(row=10, column=0, sticky="w", padx=10)
-    opacity_slider.grid(row=11, column=0, sticky="w", padx=10)
+    opacity_label.grid(row=11, column=0, sticky="w", padx=10)
+    opacity_slider.grid(row=12, column=0, sticky="w", padx=10)
 
     # Stores the widgets as values, so they can be passed to add_text and retrieved via .get()
+    # Button widget values aren't passed via this dictionary
     user_text_selections = {
-        "text": text_box,
+        "angle": text_angle_slider,
         "font": font_menu,
         "font_size": font_size_menu,
         "opacity": opacity_slider,
+        "text": text_box,
+        "tiling": "single",
         "x": text_x_slider,
         "y": text_y_slider,
-        "angle": text_angle_slider,
     }
 
 # Add Copyright - Changes a copyright attribute of the photo_canvas object, to be referenced in text_options
@@ -192,6 +203,7 @@ def add_copyright(text_box):
 # Adding formatted text - Received from text_options()
 def add_text(text_options, current_color, fonts, font_display_names):
     text = text_options["text"].get()
+    tiling = text_options["tiling"]
     font = text_options["font"].get()
     x = text_options["x"].get()
     y = text_options["y"].get()
@@ -201,15 +213,66 @@ def add_text(text_options, current_color, fonts, font_display_names):
     text_color = (current_color[0], current_color[1], current_color[2], opacity)
     font_index = font_display_names.index(font)
     font_file = ImageFont.truetype(f'fonts/{fonts[font_index]}', size=font_size)
-    new_image = Image.new("RGBA", size=(font_size * int((len(text) + 1) * .6), font_size * int((len(text) + 1) * .6)), color=(0, 0, 0 ,0))
-    draw = ImageDraw.Draw(new_image)
-    draw.text(xy=(new_image.width / 2, new_image.height / 2), text=text, font=font_file, fill=text_color, anchor="mm")
-    rotated_image = apply_angle(new_image, angle)
-    updated_image = ImageTk.PhotoImage(rotated_image)
-    photo_canvas.text_image = updated_image
-    photo_canvas.image_id = photo_canvas.create_image((x + ((font_size * .5) * (len(text) / 2)), (photo_canvas.winfo_height() - y)), image=updated_image)
-    create_bounding_box()
-    print(photo_canvas.copyright)
+
+    # Apply tiling
+
+    if tiling == "single":
+        new_image = Image.new("RGBA",
+                              size=(font_size * int((len(text) + 1) * .6), font_size * int((len(text) + 1) * .6)),
+                              color=(0, 0, 0, 0))
+        draw = ImageDraw.Draw(new_image)
+        draw.text(xy=(new_image.width / 2, new_image.height / 2), text=text, font=font_file, fill=text_color,
+                  anchor="mm")
+        rotated_image = apply_angle(new_image, angle)
+        updated_image = ImageTk.PhotoImage(rotated_image)
+        photo_canvas.text_image = updated_image
+        photo_canvas.image_id = photo_canvas.create_image(
+            (x + ((font_size * .5) * (len(text) / 2)), (photo_canvas.winfo_height() - y)), image=updated_image)
+        create_bounding_box()
+
+    elif tiling == "square":
+        tile_width = photo_canvas.winfo_width() * 3
+        tile_height = photo_canvas.winfo_height() * 3
+        new_image = Image.new("RGBA",
+                              size=(tile_width, tile_height),
+                              color=(0, 0, 0, 0))
+        draw = ImageDraw.Draw(new_image)
+        for y in range(0, tile_height, font_size * 5):
+            for x in range(0, tile_width, font_size * 5):
+                draw.text(xy=(x, y), text=text, font=font_file, fill=text_color, anchor="mm")
+        rotated_image = apply_angle(new_image, angle)
+        updated_image = ImageTk.PhotoImage(rotated_image)
+        photo_canvas.text_image = updated_image
+        photo_canvas.image_id = photo_canvas.create_image(
+            photo_canvas.winfo_width() / 2, photo_canvas.winfo_height() / 2, image=updated_image, anchor="center")
+        create_bounding_box()
+    elif tiling == "diamond":
+        slide_line = False
+        tile_width = photo_canvas.winfo_width() * 3
+        tile_height = photo_canvas.winfo_height() * 3
+
+        new_image = Image.new("RGBA",
+                              size=(tile_width, tile_height),
+                              color=(0, 0, 0, 0))
+        draw = ImageDraw.Draw(new_image)
+
+
+        for y in range(0, tile_height, font_size * 5):
+            if slide_line:
+                for x in range(0, tile_width, font_size * 5):
+                    draw.text(xy=(x, y), text=text, font=font_file, fill=text_color, anchor="mm")
+                slide_line = False
+            else:
+                for x in range(int(font_size * 2.5), tile_width, font_size * 5):
+                    draw.text(xy=(x, y), text=text, font=font_file, fill=text_color, anchor="mm")
+                slide_line = True
+
+        rotated_image = apply_angle(new_image, angle)
+        updated_image = ImageTk.PhotoImage(rotated_image)
+        photo_canvas.text_image = updated_image
+        photo_canvas.image_id = photo_canvas.create_image(
+            photo_canvas.winfo_width() / 2, photo_canvas.winfo_height() / 2, image=updated_image, anchor="center")
+        create_bounding_box()
 
 # Generated the logo options window - Contains the window's widgets
 def logo_options():

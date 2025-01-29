@@ -32,6 +32,7 @@ Options for text:
 - Rotation - Done 1/23
 - Position - Done 1/23
 - Drag and drop text - Done 1/27
-- Tile
+- Tile - Done 1/28 
 - Undo changes
+- Download image
 - Add Copyright to Text - Done 1/27
