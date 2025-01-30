@@ -31,6 +31,16 @@
  - Undo changes made
  - Photos can be saved
 
+1/30
+ - Began working on logo window
+ - Drag-and-drop upload for logo done
+ - Able to upload logo via upload button
+ - Need to add a cancel button to upload logo window, also make it force interaction before moving on
+ - Problem where user may accidentally drag logo onto main window, uploading on main photo_canvas
+ - Figured out that if you save an uploaded logo image as a canvas attribute, using it later on for resizing
+ calculations distorts the image aspect ratio. Instead, store the file path, call a new one for resizing independent
+ of the canvas to address.
+
 Options for text:
 - Add text - Done 1/21
 - Color - Done 1/22

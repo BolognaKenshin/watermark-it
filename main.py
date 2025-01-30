@@ -16,6 +16,7 @@ window_dict = {
 "watermark_window": None,
 "text_window": None,
 "logo_window": None,
+"upload_logo_window": None,
 }
 
 main_window.grid_columnconfigure(index=0, weight=1)
@@ -34,6 +35,8 @@ def upload_image(photo_canvas):
         window_dict["text_window"].destroy()
     if window_dict["logo_window"]:
         window_dict["logo_window"].destroy()
+    if window_dict["upload_logo_window"]:
+        window_dict["upload_logo_window"].destroy()
     uploaded_image_path = tk.filedialog.askopenfilename()
     if uploaded_image_path:
         file_type = magic.from_file(uploaded_image_path, mime=True)
@@ -63,6 +66,8 @@ def on_drop(event, photo_canvas):
         window_dict["text_window"].destroy()
     if window_dict["logo_window"]:
         window_dict["logo_window"].destroy()
+    if window_dict["upload_logo_window"]:
+        window_dict["upload_logo_window"].destroy()
     file_path = event.data.strip("{}")
     if file_path:
         file_type = magic.from_file(file_path, mime=True)
@@ -93,7 +98,7 @@ def watermark_options():
                                 command=text_options)
     add_logo_button = tk.Button(watermark_window,
                                 text="Add Logo",
-                                command=logo_options)
+                                command=upload_logo_window)
     window_dict["watermark_window"] = watermark_window
     add_text_button.grid(column=0, row=1, padx=75, pady=25)
     add_logo_button.grid(column=1, row=1, padx=75, pady=25)
@@ -284,14 +289,91 @@ def add_text(text_options, current_color, fonts, font_display_names):
             photo_canvas.winfo_width() / 2, photo_canvas.winfo_height() / 2, image=updated_image, anchor="center")
         create_bounding_box()
 
-# Generated the logo options window - Contains the window's widgets
+# Drag and drop logo or upload via button
+def upload_logo_window():
+    if window_dict["watermark_window"]:
+        window_dict["watermark_window"].destroy()
+    upload_logo_window = tk.Toplevel(main_window)
+    window_dict["upload_logo_window"] = upload_logo_window
+    upload_logo_window.minsize(width=500, height=250)
+    upload_logo_window.title("Upload Logo")
+    drag_label = tk.Label(upload_logo_window, text="Drag your logo here", font=("Arial", 14))
+    or_label = tk.Label(upload_logo_window, text="Or", font=("Arial", 10))
+    logo_upload = tk.Button(upload_logo_window, text="Upload", command=upload_logo)
+    drag_label.grid(row=0, column=0)
+    or_label.grid(row=1, column=0)
+    logo_upload.grid(row=2, column=0)
+    upload_logo_window.drop_target_register(DND_FILES)
+    upload_logo_window.dnd_bind('<<Drop>>', lambda event: logo_on_drop(event))
+    upload_logo_window.grab_set()
+
+# Uploads logo png
+def upload_logo():
+    logo_path = tk.filedialog.askopenfilename()
+    photo_canvas.logo_path = logo_path
+    if logo_path:
+        file_type = magic.from_file(logo_path, mime=True)
+        if file_type.startswith('image/png'):
+            logo = Image.open(logo_path)
+            photo_canvas.logo_pillow = logo
+            logo_photo = ImageTk.PhotoImage(logo)
+            photo_canvas.logo_photo = logo_photo
+            photo_canvas.create_image(0, 0, image=logo_photo, anchor="nw")
+            logo_options()
+        else:
+            print("Not a valid .png file.")
+
+# Upload logo via drag and drop
+def logo_on_drop(event):
+    logo_path = event.data.strip("{}")
+    photo_canvas.logo_path = logo_path
+    if logo_path:
+        file_type = magic.from_file(logo_path, mime=True)
+        if file_type.startswith('image/png'):
+            logo = Image.open(logo_path)
+            photo_canvas.logo_pillow = logo
+            logo_photo = ImageTk.PhotoImage(logo)
+            photo_canvas.logo_photo = logo_photo
+            photo_canvas.logo_id = photo_canvas.create_image(0, 0, image=logo_photo, anchor="nw")
+            logo_options()
+        else:
+            print("Not a valid .png file.")
+
+
+# Generates the logo options window - Contains the window's widgets
 def logo_options():
     if window_dict["watermark_window"]:
         window_dict["watermark_window"].destroy()
+    if window_dict["upload_logo_window"]:
+        window_dict["upload_logo_window"].destroy()
     logo_window = tk.Toplevel(main_window)
-    logo_window.title("Text Options")
+    logo_window.title("Logo Options")
     logo_window.minsize(width=250, height=600)
     window_dict["logo_window"] = logo_window
+    size_label = tk.Label(logo_window, text="Logo Size")
+    logo_sizes = [f'{str(size)}x' for size in range(-10, 11)]
+    logo_sizes.remove("0x")
+    logo_size_menu = ttk.Combobox(logo_window, values=logo_sizes, height=10, state="readonly", width=10)
+    size_label.grid(row=0, column=0)
+    logo_size_menu.grid(row=1, column=0, padx=10)
+    apply_changes_button = tk.Button(logo_window, text="Apply Changes", command=lambda: edit_logo(user_logo_selections))
+    apply_changes_button.grid(row=2, column=0, padx=10)
+
+    user_logo_selections = {"size": logo_size_menu}
+
+# Applies logo settings
+def edit_logo(user_logo_selections):
+    logo_size_scale = int(user_logo_selections["size"].get().strip("x"))
+    print(logo_size_scale)
+    new_image = Image.open(photo_canvas.logo_path)
+    logo_width, logo_height = new_image.size
+    edited_logo_pillow = new_image.resize((logo_width * logo_size_scale, logo_height * logo_size_scale), resample=Image.Resampling.BICUBIC).convert("RGBA")
+    print(edited_logo_pillow.size)
+    logo_photo = ImageTk.PhotoImage(edited_logo_pillow)
+    photo_canvas.logo_photo = logo_photo
+    photo_canvas.logo_id  = photo_canvas.create_image(photo_canvas.winfo_width() / 2, photo_canvas.winfo_height() / 2, image=logo_photo, anchor="center")
+
+
 
 # Select a color for text or logo
 def select_color():
