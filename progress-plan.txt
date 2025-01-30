@@ -23,6 +23,14 @@
  - Repaired rotation, adding Image.Resampling.BICUBIC fixed the choppy pixelation when rotated.
  - Added a functional copyright button, adds or removes a "©" symbol.
 
+
+1/29
+ - Spent a lot of time trying to see if opacity can be edited to make pasted text lighter
+ - Seems to be consequence of paste, likely blending
+ - Subtle, just leave
+ - Undo changes made
+ - Photos can be saved
+
 Options for text:
 - Add text - Done 1/21
 - Color - Done 1/22
