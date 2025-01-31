@@ -116,8 +116,6 @@ def text_options():
     text_window.minsize(width=250, height=600)
 
     # Text Entry - Position
-    photo_width = photo_canvas.winfo_width()
-    photo_height = photo_canvas.winfo_height()
     text_box = tk.Entry(text_window)
     text_box.grid(row=0, column=0, sticky="w", padx=10)
     text_submit = tk.Button(text_window, text="Add Text", command=lambda: add_text(user_text_selections,
@@ -132,9 +130,9 @@ def text_options():
     font_size_menu.set("14px")
 
     text_x_label = tk.Label(text_window, text="X Coordinates")
-    text_x_slider = tk.Scale(text_window, from_=0, to=photo_width, orient="horizontal", showvalue=False)
+    text_x_slider = tk.Scale(text_window, from_=0, to=photo_canvas.winfo_width(), orient="horizontal", showvalue=False)
     text_y_label = tk.Label(text_window, text="Y Coordinates")
-    text_y_slider = tk.Scale(text_window, from_=6, to=photo_height, orient="horizontal", showvalue=False)
+    text_y_slider = tk.Scale(text_window, from_=6, to=photo_canvas.winfo_height(), orient="horizontal", showvalue=False)
     text_x_label.grid(row=1, column=0, sticky="w", padx=10)
     text_x_slider.grid(row=2, column=0, sticky="w", padx=10)
     text_y_label.grid(row=3, column=0, sticky="w", padx=10)
@@ -240,8 +238,8 @@ def add_text(text_options, current_color, fonts, font_display_names):
         create_bounding_box()
 
     elif tiling == "square":
-        tile_width = photo_canvas.winfo_width() * 3
-        tile_height = photo_canvas.winfo_height() * 3
+        tile_width = photo_canvas.winfo_width() * 2
+        tile_height = photo_canvas.winfo_height() * 2
         new_image = Image.new("RGBA",
                               size=(tile_width, tile_height),
                               color=(0, 0, 0, 0))
@@ -256,11 +254,11 @@ def add_text(text_options, current_color, fonts, font_display_names):
         photo_canvas.watermark_x = (photo_canvas.winfo_width() / 2) - 1
         photo_canvas.watermark_y = (photo_canvas.winfo_height() / 2) - 1
         photo_canvas.watermark_id = photo_canvas.create_image(
-            photo_canvas.winfo_width() / 2, photo_canvas.winfo_height() / 2, image=updated_image, anchor="center")
+            (photo_canvas.winfo_width() / 2), (photo_canvas.winfo_height() / 2), image=updated_image, anchor="center")
         create_bounding_box()
     elif tiling == "diamond":
         slide_line = False
-        tile_width = photo_canvas.winfo_width() * 3
+        tile_width = photo_canvas.winfo_width() * 2
         tile_height = photo_canvas.winfo_height() * 3
 
         new_image = Image.new("RGBA",
@@ -317,9 +315,10 @@ def upload_logo():
             logo = Image.open(logo_path)
             photo_canvas.logo_pillow = logo
             logo_photo = ImageTk.PhotoImage(logo)
-            photo_canvas.logo_photo = logo_photo
-            photo_canvas.create_image(0, 0, image=logo_photo, anchor="nw")
+            photo_canvas.watermark_image = logo_photo
+            photo_canvas.watermark_id = photo_canvas.create_image(0, 0, image=logo_photo, anchor="nw")
             logo_options()
+            create_bounding_box()
         else:
             print("Not a valid .png file.")
 
@@ -333,11 +332,13 @@ def logo_on_drop(event):
             logo = Image.open(logo_path)
             photo_canvas.logo_pillow = logo
             logo_photo = ImageTk.PhotoImage(logo)
-            photo_canvas.logo_photo = logo_photo
-            photo_canvas.logo_id = photo_canvas.create_image(0, 0, image=logo_photo, anchor="nw")
+            photo_canvas.watermark_image = logo_photo
+            photo_canvas.watermark_id = photo_canvas.create_image(0, 0, image=logo_photo, anchor="nw")
             logo_options()
+            create_bounding_box()
         else:
             print("Not a valid .png file.")
+
 
 
 # Generates the logo options window - Contains the window's widgets
@@ -351,28 +352,52 @@ def logo_options():
     logo_window.minsize(width=250, height=600)
     window_dict["logo_window"] = logo_window
     size_label = tk.Label(logo_window, text="Logo Size")
-    logo_sizes = [f'{str(size)}x' for size in range(-10, 11)]
-    logo_sizes.remove("0x")
-    logo_size_menu = ttk.Combobox(logo_window, values=logo_sizes, height=10, state="readonly", width=10)
+    logo_size_scale = tk.Scale(logo_window, from_=-500, to=500, length=150, orient="horizontal")
+    logo_size_scale.set(0)
     size_label.grid(row=0, column=0)
-    logo_size_menu.grid(row=1, column=0, padx=10)
-    apply_changes_button = tk.Button(logo_window, text="Apply Changes", command=lambda: edit_logo(user_logo_selections))
-    apply_changes_button.grid(row=2, column=0, padx=10)
+    logo_size_scale.grid(row=1, column=0, padx=50)
 
-    user_logo_selections = {"size": logo_size_menu}
+    logo_x_label = tk.Label(logo_window, text="X Coordinates")
+    logo_x_slider = tk.Scale(logo_window, from_=0, to=photo_canvas.winfo_width(), orient="horizontal", showvalue=False)
+    logo_y_label = tk.Label(logo_window, text="Y Coordinates")
+    logo_y_slider = tk.Scale(logo_window, from_=0, to=photo_canvas.winfo_height(), orient="horizontal", showvalue=False)
+    logo_x_label.grid(row=2, column=0)
+    logo_x_slider.grid(row=3, column=0, padx=75)
+    logo_y_label.grid(row=4, column=0)
+    logo_y_slider.grid(row=5, column=0, padx=75)
+    apply_changes_button = tk.Button(logo_window, text="Apply Changes", command=lambda: edit_logo(user_logo_selections))
+    apply_changes_button.grid(row=6, column=0, padx=10, pady=10)
+
+    user_logo_selections = {"size": logo_size_scale,
+                            "x": logo_x_slider,
+                            "y": logo_y_slider,}
 
 # Applies logo settings
 def edit_logo(user_logo_selections):
-    logo_size_scale = int(user_logo_selections["size"].get().strip("x"))
-    print(logo_size_scale)
+    logo_size_scale = user_logo_selections["size"].get()
+    x = user_logo_selections["x"].get()
+    y = user_logo_selections["y"].get()
     new_image = Image.open(photo_canvas.logo_path)
-    logo_width, logo_height = new_image.size
-    edited_logo_pillow = new_image.resize((logo_width * logo_size_scale, logo_height * logo_size_scale), resample=Image.Resampling.BICUBIC).convert("RGBA")
-    print(edited_logo_pillow.size)
-    logo_photo = ImageTk.PhotoImage(edited_logo_pillow)
-    photo_canvas.logo_photo = logo_photo
-    photo_canvas.logo_id  = photo_canvas.create_image(photo_canvas.winfo_width() / 2, photo_canvas.winfo_height() / 2, image=logo_photo, anchor="center")
-
+    if logo_size_scale > 0:
+        logo_size_scale = (logo_size_scale * .01 + 1)
+        logo_width, logo_height = new_image.size
+        edited_logo_pillow = new_image.resize((int(logo_width * logo_size_scale), int(logo_height * logo_size_scale)), resample=Image.Resampling.BICUBIC)
+        logo_photo = ImageTk.PhotoImage(edited_logo_pillow)
+        photo_canvas.watermark_image = logo_photo
+        photo_canvas.watermark_id  = photo_canvas.create_image(x, (photo_canvas.winfo_height() - y), image=logo_photo, anchor="center")
+    elif logo_size_scale < 0:
+        logo_size_scale = (abs(logo_size_scale) * .01 + 1)
+        logo_width, logo_height = new_image.size
+        edited_logo_pillow = new_image.resize((int(logo_width / logo_size_scale), int(logo_height / logo_size_scale)), resample=Image.Resampling.LANCZOS)
+        logo_photo = ImageTk.PhotoImage(edited_logo_pillow)
+        photo_canvas.watermark_image= logo_photo
+        photo_canvas.watermark_id  = photo_canvas.create_image(x, (photo_canvas.winfo_height() - y), image=logo_photo, anchor="center")
+    else:
+        edited_logo_pillow = new_image
+        logo_photo = ImageTk.PhotoImage(edited_logo_pillow)
+        photo_canvas.watermark_image = logo_photo
+        photo_canvas.watermark_id  = photo_canvas.create_image(x, (photo_canvas.winfo_height() - y), image=logo_photo, anchor="center")
+    create_bounding_box()
 
 
 # Select a color for text or logo
@@ -408,6 +433,7 @@ def clicked_text(event):
         x1, y1, x2, y2 = bbox
         if event.x >= x1 and event.x <= x2 and event.y >= y1 and event.y <= y2:
             photo_canvas.tag_bind(photo_canvas.bbox_id, "<ButtonRelease-1>", move_clicked_text)
+            print("clicked text!")
 
 # Moves the text to the new space where the user released their mouse button
 def move_clicked_text(event):
@@ -417,7 +443,10 @@ def move_clicked_text(event):
     photo_canvas.delete(photo_canvas.watermark_id)
     photo_canvas.watermark_id = photo_canvas.create_image(event.x, event.y, image=new_watermark_image)
     create_bounding_box()
-    window_dict["text_window"].lift()
+    if window_dict["text_window"]:
+        window_dict["text_window"].lift()
+    elif window_dict["logo_window"]:
+        window_dict["logo_window"].lift()
 
 # Undo Changes
 def undo_changes():
@@ -438,8 +467,6 @@ def save_watermarked_image():
                                                                                  (".jpeg", "*.jpeg")])
 
     watermarked_image.save(save_path)
-
-
 
 
 # Main App - Components

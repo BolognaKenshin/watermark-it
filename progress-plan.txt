@@ -41,6 +41,11 @@
  calculations distorts the image aspect ratio. Instead, store the file path, call a new one for resizing independent
  of the canvas to address.
 
+ 1/31
+ - Improved resizing, changed from ComboBox back to a Scale, improved resizing capabilities.
+ - Logo positioning via slider functional
+ - Logo drag-and-drop functional
+
 Options for text:
 - Add text - Done 1/21
 - Color - Done 1/22
