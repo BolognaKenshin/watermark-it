@@ -46,6 +46,9 @@
  - Logo positioning via slider functional
  - Logo drag-and-drop functional
 
+ 2/3
+ - Added rotation for logo - functional
+
 Options for text:
 - Add text - Done 1/21
 - Color - Done 1/22

@@ -365,15 +365,25 @@ def logo_options():
     logo_x_slider.grid(row=3, column=0, padx=75)
     logo_y_label.grid(row=4, column=0)
     logo_y_slider.grid(row=5, column=0, padx=75)
-    apply_changes_button = tk.Button(logo_window, text="Apply Changes", command=lambda: edit_logo(user_logo_selections))
-    apply_changes_button.grid(row=6, column=0, padx=10, pady=10)
 
-    user_logo_selections = {"size": logo_size_scale,
+    logo_angle_label = tk.Label(logo_window, text="Text Angle")
+    logo_angle_slider = tk.Scale(logo_window, from_=-180, to=180, orient="horizontal")
+    logo_angle_label.grid(row=6, column=0)
+    logo_angle_slider .grid(row=7, column=0, padx=75)
+
+    apply_changes_button = tk.Button(logo_window, text="Apply Changes", command=lambda: edit_logo(user_logo_selections))
+    apply_changes_button.grid(row=8, column=0, padx=10, pady=10)
+
+    user_logo_selections = {"angle": logo_angle_slider,
+                            "size": logo_size_scale,
                             "x": logo_x_slider,
                             "y": logo_y_slider,}
 
 # Applies logo settings
 def edit_logo(user_logo_selections):
+    angle = user_logo_selections["angle"].get()
+    print(angle)
+    print(type(angle))
     logo_size_scale = user_logo_selections["size"].get()
     x = user_logo_selections["x"].get()
     y = user_logo_selections["y"].get()
@@ -382,19 +392,25 @@ def edit_logo(user_logo_selections):
         logo_size_scale = (logo_size_scale * .01 + 1)
         logo_width, logo_height = new_image.size
         edited_logo_pillow = new_image.resize((int(logo_width * logo_size_scale), int(logo_height * logo_size_scale)), resample=Image.Resampling.BICUBIC)
-        logo_photo = ImageTk.PhotoImage(edited_logo_pillow)
+        rotated_logo = apply_angle(edited_logo_pillow, angle)
+        photo_canvas.logo_pillow = rotated_logo
+        logo_photo = ImageTk.PhotoImage(rotated_logo)
         photo_canvas.watermark_image = logo_photo
         photo_canvas.watermark_id  = photo_canvas.create_image(x, (photo_canvas.winfo_height() - y), image=logo_photo, anchor="center")
     elif logo_size_scale < 0:
         logo_size_scale = (abs(logo_size_scale) * .01 + 1)
         logo_width, logo_height = new_image.size
         edited_logo_pillow = new_image.resize((int(logo_width / logo_size_scale), int(logo_height / logo_size_scale)), resample=Image.Resampling.LANCZOS)
-        logo_photo = ImageTk.PhotoImage(edited_logo_pillow)
+        rotated_logo = apply_angle(edited_logo_pillow, angle)
+        photo_canvas.logo_pillow = rotated_logo
+        logo_photo = ImageTk.PhotoImage(rotated_logo)
         photo_canvas.watermark_image= logo_photo
         photo_canvas.watermark_id  = photo_canvas.create_image(x, (photo_canvas.winfo_height() - y), image=logo_photo, anchor="center")
     else:
         edited_logo_pillow = new_image
-        logo_photo = ImageTk.PhotoImage(edited_logo_pillow)
+        rotated_logo = apply_angle(edited_logo_pillow, angle)
+        photo_canvas.logo_pillow = rotated_logo
+        logo_photo = ImageTk.PhotoImage(rotated_logo)
         photo_canvas.watermark_image = logo_photo
         photo_canvas.watermark_id  = photo_canvas.create_image(x, (photo_canvas.winfo_height() - y), image=logo_photo, anchor="center")
     create_bounding_box()
