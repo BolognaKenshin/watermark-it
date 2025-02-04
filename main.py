@@ -255,8 +255,11 @@ def add_text(text_options, current_color, fonts, font_display_names):
                               size=(tile_width, tile_height),
                               color=(0, 0, 0, 0))
         draw = ImageDraw.Draw(new_image)
+        text_length = len(text) - 8
+        if text_length < 0:
+            text_length = 0
         for y in range(0, tile_height, font_size * 5):
-            for x in range(0, tile_width, font_size * 5):
+            for x in range(0, tile_width, font_size * (5 + text_length)):
                 draw.text(xy=(x, y), text=text, font=font_file, fill=text_color, anchor="mm")
         rotated_image = apply_angle(new_image, angle)
         photo_canvas.watermark_pillow = rotated_image
@@ -276,15 +279,16 @@ def add_text(text_options, current_color, fonts, font_display_names):
                               size=(tile_width, tile_height),
                               color=(0, 0, 0, 0))
         draw = ImageDraw.Draw(new_image)
-
-
+        text_length = len(text) - 8
+        if text_length < 0:
+            text_length = 0
         for y in range(0, tile_height, font_size * 5):
             if slide_line:
-                for x in range(int(font_size * 2.5), tile_width, font_size * 5):
+                for x in range(int(font_size * ((5 + text_length) / 2)), tile_width, font_size * (5 + text_length)):
                     draw.text(xy=(x, y), text=text, font=font_file, fill=text_color, anchor="mm")
                 slide_line = False
             else:
-                for x in range(0, tile_width, font_size * 5):
+                for x in range(0, tile_width, font_size * (5 + text_length)):
                     draw.text(xy=(x, y), text=text, font=font_file, fill=text_color, anchor="mm")
                 slide_line = True
 
