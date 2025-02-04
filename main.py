@@ -1,6 +1,6 @@
 import os
 import tkinter as tk
-from tkinter import filedialog, font, ttk
+from tkinter import filedialog, font, messagebox, ttk
 from tkinterdnd2 import TkinterDnD, DND_FILES
 from tkinter.colorchooser import askcolor
 from PIL import Image, ImageTk, ImageDraw, ImageFont
@@ -8,7 +8,7 @@ import magic
 
 main_window = TkinterDnD.Tk()
 main_window.title("Carl's Watermark App")
-main_window.minsize(width=1200, height=700)
+main_window.minsize(width=1200, height=800)
 
 current_color = (0, 0, 0, 255)
 
@@ -58,7 +58,7 @@ def upload_image(photo_canvas):
             photo_canvas.image_id = photo_canvas.create_image(2, 2, image=photo, anchor="nw")
             watermark_options()
         else:
-            print("That's not a valid file format.")
+            messagebox.showerror("Invalid File", "The file you selected is not an image.")
 
 
 # Same as upload_image function, but works with drag-and-drop
@@ -93,7 +93,7 @@ def on_drop(event, photo_canvas):
             photo_canvas.image_id = photo_canvas.create_image(2, 2, image=photo, anchor="nw")
             watermark_options()
         else:
-            print("That's not a valid file format.")
+            messagebox.showerror("Invalid File", "The file you selected is not an image.")
 
 
 # Generated the watermark options window, text or logo
@@ -116,6 +116,11 @@ def watermark_options():
 # Color gets passed separate from the dictionary as the askcolor box doesn't pass values the same way
 def text_options():
     global current_color
+    if photo_canvas.options_button:
+        photo_canvas.options_button.config(photo_canvas.options_button, text="Text Options", command=text_options)
+    else:
+        photo_canvas.options_button = tk.Button(main_window, text="Text Options", font=("Arial", 18), command=text_options)
+        photo_canvas.options_button.grid(column=1, row=4, pady=10)
     if window_dict["watermark_window"]:
         window_dict["watermark_window"].destroy()
         window_dict["watermark_window"] = None
@@ -243,7 +248,7 @@ def add_text(text_options, current_color, fonts, font_display_names):
         photo_canvas.watermark_x = x + ((font_size * .5) * (len(text) / 2))
         photo_canvas.watermark_y = (photo_canvas.winfo_height() - y)
         photo_canvas.watermark_id = photo_canvas.create_image(
-            (x + ((font_size * .5) * (len(text) / 2)), (photo_canvas.winfo_height() - y)), image=updated_image)
+            (photo_canvas.watermark_x, photo_canvas.watermark_y), image=updated_image)
         create_bounding_box()
 
     elif tiling == "square":
@@ -263,7 +268,7 @@ def add_text(text_options, current_color, fonts, font_display_names):
         photo_canvas.watermark_x = (photo_canvas.winfo_width() / 2) - 1
         photo_canvas.watermark_y = (photo_canvas.winfo_height() / 2) - 1
         photo_canvas.watermark_id = photo_canvas.create_image(
-            (photo_canvas.winfo_width() / 2), (photo_canvas.winfo_height() / 2), image=updated_image, anchor="center")
+            (photo_canvas.watermark_x, photo_canvas.watermark_y), image=updated_image, anchor="center")
         create_bounding_box()
     elif tiling == "diamond":
         slide_line = True
@@ -293,7 +298,7 @@ def add_text(text_options, current_color, fonts, font_display_names):
         photo_canvas.watermark_x = (photo_canvas.winfo_width() / 2) - 1
         photo_canvas.watermark_y = (photo_canvas.winfo_height() / 2) - 1
         photo_canvas.watermark_id = photo_canvas.create_image(
-            photo_canvas.winfo_width() / 2, photo_canvas.winfo_height() / 2, image=updated_image, anchor="center")
+            (photo_canvas.watermark_x, photo_canvas.watermark_y), image=updated_image, anchor="center")
         create_bounding_box()
 
 # Drag and drop logo or upload via button
@@ -323,14 +328,14 @@ def upload_logo():
         file_type = magic.from_file(logo_path, mime=True)
         if file_type.startswith('image/png'):
             logo = Image.open(logo_path)
-            photo_canvas.logo_pillow = logo
+            photo_canvas.watermark_pillow = logo
             logo_photo = ImageTk.PhotoImage(logo)
             photo_canvas.watermark_image = logo_photo
             photo_canvas.watermark_id = photo_canvas.create_image(0, 0, image=logo_photo, anchor="nw")
             logo_options()
             create_bounding_box()
         else:
-            print("Not a valid .png file.")
+            messagebox.showerror("Invalid File", "You've selected an invalid file type. Please submit a PNG image.")
 
 # Upload logo via drag and drop
 def logo_on_drop(event):
@@ -340,19 +345,25 @@ def logo_on_drop(event):
         file_type = magic.from_file(logo_path, mime=True)
         if file_type.startswith('image/png'):
             logo = Image.open(logo_path)
-            photo_canvas.logo_pillow = logo
+            photo_canvas.watermark_pillow = logo
             logo_photo = ImageTk.PhotoImage(logo)
             photo_canvas.watermark_image = logo_photo
             photo_canvas.watermark_id = photo_canvas.create_image(0, 0, image=logo_photo, anchor="nw")
             logo_options()
             create_bounding_box()
         else:
-            print("Not a valid .png file.")
+            messagebox.showerror("Invalid File", "You've selected an invalid file type. Please submit a PNG image.")
 
 
 
 # Generates the logo options window - Contains the window's widgets
 def logo_options():
+    if photo_canvas.options_button:
+        photo_canvas.options_button.config(photo_canvas.options_button, text="Logo Options", command=logo_options)
+    else:
+        photo_canvas.options_button = tk.Button(main_window, text="Logo Options", font=("Arial", 18),
+                                                command=logo_options)
+        photo_canvas.options_button.grid(column=1, row=4, pady=10)
     if window_dict["watermark_window"]:
         window_dict["watermark_window"].destroy()
         window_dict["watermark_window"] = None
@@ -397,8 +408,11 @@ def logo_options():
     diamond_tile_button.grid(row=8, column=1, pady=10, sticky="E")
     undo_changes_button = tk.Button(logo_window, text="Undo Changes", command=undo_changes)
     undo_changes_button.grid(row=9, column=1, padx=10, pady=10)
+    save_image_button = tk.Button(logo_window, text="Save Image", command=save_watermarked_image)
+    save_image_button.grid(row=10, column=1, padx=10, pady=10)
     apply_changes_button = tk.Button(logo_window, text="Apply Changes", command=lambda: edit_logo(user_logo_selections))
-    apply_changes_button.grid(row=10, column=1, padx=10, pady=10)
+    apply_changes_button.grid(row=11, column=1, padx=10, pady=10)
+
 
     user_logo_selections = {"angle": logo_angle_slider,
                             "size": logo_size_scale,
@@ -427,10 +441,12 @@ def edit_logo(user_logo_selections):
 
     if tiling == "single":
         rotated_logo = apply_angle(edited_logo_pillow, angle)
-        photo_canvas.logo_pillow = rotated_logo
+        photo_canvas.watermark_pillow = rotated_logo
         logo_photo = ImageTk.PhotoImage(rotated_logo)
         photo_canvas.watermark_image = logo_photo
-        photo_canvas.watermark_id = photo_canvas.create_image(x, (photo_canvas.winfo_height() - y), image=logo_photo,
+        photo_canvas.watermark_x = x
+        photo_canvas.watermark_y = photo_canvas.winfo_height() - y
+        photo_canvas.watermark_id = photo_canvas.create_image((x, photo_canvas.watermark_y), image=logo_photo,
                                                               anchor="center")
         create_bounding_box()
     if tiling == "square":
@@ -441,11 +457,14 @@ def edit_logo(user_logo_selections):
             for x in range(0, tile_width, int(edited_logo_pillow.width * 1.5)):
                 tile_image.paste(edited_logo_pillow, (x, y), edited_logo_pillow)
         rotated_logo = apply_angle(tile_image, angle)
-        photo_canvas.logo_pillow = rotated_logo
+        photo_canvas.watermark_pillow = rotated_logo
         logo_photo = ImageTk.PhotoImage(rotated_logo)
         photo_canvas.watermark_image = logo_photo
-        photo_canvas.watermark_id = photo_canvas.create_image(0, 0, image=logo_photo,
-                                                              anchor="center")
+        photo_canvas.watermark_x = (photo_canvas.winfo_width() / 2)
+        photo_canvas.watermark_y = (photo_canvas.winfo_height() / 2)
+        photo_canvas.watermark_id = photo_canvas.create_image(
+            (photo_canvas.watermark_x, photo_canvas.watermark_y), image=logo_photo,
+            anchor="center")
         create_bounding_box()
 
     elif tiling == "diamond":
@@ -463,11 +482,13 @@ def edit_logo(user_logo_selections):
                     tile_image.paste(edited_logo_pillow, (x, y), edited_logo_pillow)
                 slide_line = True
         rotated_logo = apply_angle(tile_image, angle)
-        photo_canvas.logo_pillow = rotated_logo
+        photo_canvas.watermark_pillow = rotated_logo
         logo_photo = ImageTk.PhotoImage(rotated_logo)
         photo_canvas.watermark_image = logo_photo
+        photo_canvas.watermark_x = (photo_canvas.winfo_width() / 2)
+        photo_canvas.watermark_y = (photo_canvas.winfo_height() / 2)
         photo_canvas.watermark_id = photo_canvas.create_image(
-            (photo_canvas.winfo_width() / 2), (photo_canvas.winfo_height() / 2), image=logo_photo,
+            (photo_canvas.watermark_x, photo_canvas.watermark_y), image=logo_photo,
             anchor="center")
         create_bounding_box()
 
@@ -530,7 +551,7 @@ def undo_changes():
 
 
 # Save watermarked image
-def save_watermarked_image():
+def save_watermarked_image(): 
     background = photo_canvas.pillow_image.convert("RGBA")
     watermarked_image = background.copy().convert("RGBA")
     watermark = photo_canvas.watermark_pillow
@@ -555,14 +576,17 @@ or_label = tk.Label(text="Or", font=("Arial", 12))
 photo_canvas = tk.Canvas(bg=None, width=landscape_width, height=landscape_height)
 upload_button = tk.Button(text="Upload", font=("Arial", 14), command=lambda: upload_image(photo_canvas))
 photo_canvas.image_id = photo_canvas.create_image(photo_canvas.winfo_width() / 2, photo_canvas.winfo_height() / 2, image=landscape_photo, anchor="nw")
+
 photo_canvas.bbox_id = None
 photo_canvas.copyright = False
+photo_canvas.options_button = None
 
 # Main App - Grid
+# Note - Text options button is generated by/within the text_options and logo_options functions above
 my_label.grid(column=1, row=0)
-drag_label.grid(column=1, row=2)
-or_label.grid(column=1, row=3)
-upload_button.grid(column=1, row=4)
+drag_label.grid(column=1, row=1)
+or_label.grid(column=1, row=2)
+upload_button.grid(column=1, row=3)
 photo_canvas.grid(column=1, row=5)
 
 
