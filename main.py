@@ -31,12 +31,16 @@ main_window.grid_columnconfigure(index=2, weight=1)
 def upload_image(photo_canvas):
     if window_dict["watermark_window"]:
         window_dict["watermark_window"].destroy()
+        window_dict["watermark_window"] = None
     if window_dict["text_window"]:
         window_dict["text_window"].destroy()
+        window_dict["text_window"] = None
     if window_dict["logo_window"]:
         window_dict["logo_window"].destroy()
+        window_dict["logo_window"] = None
     if window_dict["upload_logo_window"]:
         window_dict["upload_logo_window"].destroy()
+        window_dict["upload_logo_window"] = None
     uploaded_image_path = tk.filedialog.askopenfilename()
     if uploaded_image_path:
         file_type = magic.from_file(uploaded_image_path, mime=True)
@@ -62,12 +66,16 @@ def upload_image(photo_canvas):
 def on_drop(event, photo_canvas):
     if window_dict["watermark_window"]:
         window_dict["watermark_window"].destroy()
+        window_dict["watermark_window"] = None
     if window_dict["text_window"]:
         window_dict["text_window"].destroy()
+        window_dict["text_window"] = None
     if window_dict["logo_window"]:
         window_dict["logo_window"].destroy()
+        window_dict["logo_window"] = None
     if window_dict["upload_logo_window"]:
         window_dict["upload_logo_window"].destroy()
+        window_dict["upload_logo_window"] = None
     file_path = event.data.strip("{}")
     if file_path:
         file_type = magic.from_file(file_path, mime=True)
@@ -110,6 +118,7 @@ def text_options():
     global current_color
     if window_dict["watermark_window"]:
         window_dict["watermark_window"].destroy()
+        window_dict["watermark_window"] = None
     text_window = tk.Toplevel(main_window)
     window_dict["text_window"] = text_window
     text_window.title("Text Options")
@@ -291,6 +300,7 @@ def add_text(text_options, current_color, fonts, font_display_names):
 def upload_logo_window():
     if window_dict["watermark_window"]:
         window_dict["watermark_window"].destroy()
+        window_dict["watermark_window"] = None
     upload_logo_window = tk.Toplevel(main_window)
     window_dict["upload_logo_window"] = upload_logo_window
     upload_logo_window.minsize(width=500, height=250)
@@ -345,8 +355,13 @@ def logo_on_drop(event):
 def logo_options():
     if window_dict["watermark_window"]:
         window_dict["watermark_window"].destroy()
+        window_dict["watermark_window"] = None
     if window_dict["upload_logo_window"]:
         window_dict["upload_logo_window"].destroy()
+        window_dict["upload_logo_window"] = None
+    if window_dict["text_window"]:
+        window_dict["text_window"].destroy()
+        window_dict["text_window"] = None
     logo_window = tk.Toplevel(main_window)
     logo_window.title("Logo Options")
     logo_window.minsize(width=250, height=600)
@@ -374,16 +389,16 @@ def logo_options():
     logo_angle_label.grid(row=6, column=1)
     logo_angle_slider .grid(row=7, column=1)
 
-
     single_tile_button = tk.Button(logo_window, text="•", font=(20), width=4, height=2, command=lambda: user_logo_selections.update({"tiling": "single"}))
     square_tile_button = tk.Button(logo_window, text="•   •\n•   •", font=(20), width=4, height=2, command=lambda: user_logo_selections.update({"tiling": "square"}))
     diamond_tile_button = tk.Button(logo_window, text="•\n•       •\n•", font=(20), width=4, height=2, command=lambda: user_logo_selections.update({"tiling": "diamond"}))
     single_tile_button.grid(row=8, column=1, pady=10, sticky="W")
     square_tile_button.grid(row=8, column=1, padx=5, pady=10)
     diamond_tile_button.grid(row=8, column=1, pady=10, sticky="E")
-
+    undo_changes_button = tk.Button(logo_window, text="Undo Changes", command=undo_changes)
+    undo_changes_button.grid(row=9, column=1, padx=10, pady=10)
     apply_changes_button = tk.Button(logo_window, text="Apply Changes", command=lambda: edit_logo(user_logo_selections))
-    apply_changes_button.grid(row=19, column=1, padx=10, pady=10)
+    apply_changes_button.grid(row=10, column=1, padx=10, pady=10)
 
     user_logo_selections = {"angle": logo_angle_slider,
                             "size": logo_size_scale,
@@ -409,9 +424,9 @@ def edit_logo(user_logo_selections):
         edited_logo_pillow = new_image.resize((int(logo_width / logo_size_scale), int(logo_height / logo_size_scale)), resample=Image.Resampling.LANCZOS)
     else:
         edited_logo_pillow = new_image
-        rotated_logo = apply_angle(edited_logo_pillow, angle)
 
     if tiling == "single":
+        rotated_logo = apply_angle(edited_logo_pillow, angle)
         photo_canvas.logo_pillow = rotated_logo
         logo_photo = ImageTk.PhotoImage(rotated_logo)
         photo_canvas.watermark_image = logo_photo
@@ -507,7 +522,11 @@ def move_clicked_text(event):
 
 # Undo Changes
 def undo_changes():
-    photo_canvas.delete(photo_canvas.watermark_id)
+    try:
+        photo_canvas.delete(photo_canvas.watermark_id)
+        photo_canvas.delete(photo_canvas.bbox_id)
+    except AttributeError:
+        pass
 
 
 # Save watermarked image
