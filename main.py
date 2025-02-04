@@ -59,7 +59,6 @@ def upload_image(photo_canvas):
         else:
             messagebox.showerror("Invalid File", "The file you selected is not an image.")
 
-
 # Same as upload_image function, but works with drag-and-drop
 # Function will close other open windows when called
 def on_drop(event, photo_canvas):
@@ -109,6 +108,7 @@ def watermark_options():
     window_dict["watermark_window"] = watermark_window
     add_text_button.grid(column=0, row=1, padx=75, pady=25)
     add_logo_button.grid(column=1, row=1, padx=75, pady=25)
+
 
 # Generates the text options window - Stores them in dictionary, passes to add_text() via text_submit button
 # Color gets passed separate from the dictionary as the askcolor box doesn't pass values the same way
@@ -213,7 +213,6 @@ def add_copyright(text_box):
         text_box.delete(0, tk.END)
         text_box.insert(0, text)
         photo_canvas.copyright = False
-
 
 # Adding formatted text - Received from text_options()
 def add_text(text_options, current_color, fonts, font_display_names):
