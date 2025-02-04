@@ -23,7 +23,6 @@ main_window.grid_columnconfigure(index=0, weight=1)
 main_window.grid_columnconfigure(index=1, weight=1)
 main_window.grid_columnconfigure(index=2, weight=1)
 
-
 # App Functions
 
 # Adjusts canvas to size of image, then displays image - Connected to "Upload" button
