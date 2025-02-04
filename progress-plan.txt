@@ -48,6 +48,7 @@
 
  2/3
  - Added rotation for logo - functional
+ - Tiling for logo added
 
 Options for text:
 - Add text - Done 1/21

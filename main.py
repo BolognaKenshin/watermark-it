@@ -257,7 +257,7 @@ def add_text(text_options, current_color, fonts, font_display_names):
             (photo_canvas.winfo_width() / 2), (photo_canvas.winfo_height() / 2), image=updated_image, anchor="center")
         create_bounding_box()
     elif tiling == "diamond":
-        slide_line = False
+        slide_line = True
         tile_width = photo_canvas.winfo_width() * 2
         tile_height = photo_canvas.winfo_height() * 3
 
@@ -269,11 +269,11 @@ def add_text(text_options, current_color, fonts, font_display_names):
 
         for y in range(0, tile_height, font_size * 5):
             if slide_line:
-                for x in range(0, tile_width, font_size * 5):
+                for x in range(int(font_size * 2.5), tile_width, font_size * 5):
                     draw.text(xy=(x, y), text=text, font=font_file, fill=text_color, anchor="mm")
                 slide_line = False
             else:
-                for x in range(int(font_size * 2.5), tile_width, font_size * 5):
+                for x in range(0, tile_width, font_size * 5):
                     draw.text(xy=(x, y), text=text, font=font_file, fill=text_color, anchor="mm")
                 slide_line = True
 
@@ -350,41 +350,52 @@ def logo_options():
     logo_window = tk.Toplevel(main_window)
     logo_window.title("Logo Options")
     logo_window.minsize(width=250, height=600)
+    logo_window.grid_columnconfigure(0, weight=1)
+    logo_window.grid_columnconfigure(1, weight=1)
+    logo_window.grid_columnconfigure(2, weight=1)
     window_dict["logo_window"] = logo_window
     size_label = tk.Label(logo_window, text="Logo Size")
     logo_size_scale = tk.Scale(logo_window, from_=-500, to=500, length=150, orient="horizontal")
     logo_size_scale.set(0)
-    size_label.grid(row=0, column=0)
-    logo_size_scale.grid(row=1, column=0, padx=50)
+    size_label.grid(row=0, column=1)
+    logo_size_scale.grid(row=1, column=1, padx=50)
 
     logo_x_label = tk.Label(logo_window, text="X Coordinates")
     logo_x_slider = tk.Scale(logo_window, from_=0, to=photo_canvas.winfo_width(), orient="horizontal", showvalue=False)
     logo_y_label = tk.Label(logo_window, text="Y Coordinates")
     logo_y_slider = tk.Scale(logo_window, from_=0, to=photo_canvas.winfo_height(), orient="horizontal", showvalue=False)
-    logo_x_label.grid(row=2, column=0)
-    logo_x_slider.grid(row=3, column=0, padx=75)
-    logo_y_label.grid(row=4, column=0)
-    logo_y_slider.grid(row=5, column=0, padx=75)
+    logo_x_label.grid(row=2, column=1)
+    logo_x_slider.grid(row=3, column=1, padx=75)
+    logo_y_label.grid(row=4, column=1)
+    logo_y_slider.grid(row=5, column=1, padx=75)
 
     logo_angle_label = tk.Label(logo_window, text="Text Angle")
     logo_angle_slider = tk.Scale(logo_window, from_=-180, to=180, orient="horizontal")
-    logo_angle_label.grid(row=6, column=0)
-    logo_angle_slider .grid(row=7, column=0, padx=75)
+    logo_angle_label.grid(row=6, column=1)
+    logo_angle_slider .grid(row=7, column=1)
+
+
+    single_tile_button = tk.Button(logo_window, text="•", font=(20), width=4, height=2, command=lambda: user_logo_selections.update({"tiling": "single"}))
+    square_tile_button = tk.Button(logo_window, text="•   •\n•   •", font=(20), width=4, height=2, command=lambda: user_logo_selections.update({"tiling": "square"}))
+    diamond_tile_button = tk.Button(logo_window, text="•\n•       •\n•", font=(20), width=4, height=2, command=lambda: user_logo_selections.update({"tiling": "diamond"}))
+    single_tile_button.grid(row=8, column=1, pady=10, sticky="W")
+    square_tile_button.grid(row=8, column=1, padx=5, pady=10)
+    diamond_tile_button.grid(row=8, column=1, pady=10, sticky="E")
 
     apply_changes_button = tk.Button(logo_window, text="Apply Changes", command=lambda: edit_logo(user_logo_selections))
-    apply_changes_button.grid(row=8, column=0, padx=10, pady=10)
+    apply_changes_button.grid(row=19, column=1, padx=10, pady=10)
 
     user_logo_selections = {"angle": logo_angle_slider,
                             "size": logo_size_scale,
+                            "tiling": "single",
                             "x": logo_x_slider,
                             "y": logo_y_slider,}
 
 # Applies logo settings
 def edit_logo(user_logo_selections):
     angle = user_logo_selections["angle"].get()
-    print(angle)
-    print(type(angle))
     logo_size_scale = user_logo_selections["size"].get()
+    tiling = user_logo_selections["tiling"]
     x = user_logo_selections["x"].get()
     y = user_logo_selections["y"].get()
     new_image = Image.open(photo_canvas.logo_path)
@@ -392,28 +403,59 @@ def edit_logo(user_logo_selections):
         logo_size_scale = (logo_size_scale * .01 + 1)
         logo_width, logo_height = new_image.size
         edited_logo_pillow = new_image.resize((int(logo_width * logo_size_scale), int(logo_height * logo_size_scale)), resample=Image.Resampling.BICUBIC)
-        rotated_logo = apply_angle(edited_logo_pillow, angle)
-        photo_canvas.logo_pillow = rotated_logo
-        logo_photo = ImageTk.PhotoImage(rotated_logo)
-        photo_canvas.watermark_image = logo_photo
-        photo_canvas.watermark_id  = photo_canvas.create_image(x, (photo_canvas.winfo_height() - y), image=logo_photo, anchor="center")
     elif logo_size_scale < 0:
         logo_size_scale = (abs(logo_size_scale) * .01 + 1)
         logo_width, logo_height = new_image.size
         edited_logo_pillow = new_image.resize((int(logo_width / logo_size_scale), int(logo_height / logo_size_scale)), resample=Image.Resampling.LANCZOS)
-        rotated_logo = apply_angle(edited_logo_pillow, angle)
-        photo_canvas.logo_pillow = rotated_logo
-        logo_photo = ImageTk.PhotoImage(rotated_logo)
-        photo_canvas.watermark_image= logo_photo
-        photo_canvas.watermark_id  = photo_canvas.create_image(x, (photo_canvas.winfo_height() - y), image=logo_photo, anchor="center")
     else:
         edited_logo_pillow = new_image
         rotated_logo = apply_angle(edited_logo_pillow, angle)
+
+    if tiling == "single":
         photo_canvas.logo_pillow = rotated_logo
         logo_photo = ImageTk.PhotoImage(rotated_logo)
         photo_canvas.watermark_image = logo_photo
-        photo_canvas.watermark_id  = photo_canvas.create_image(x, (photo_canvas.winfo_height() - y), image=logo_photo, anchor="center")
-    create_bounding_box()
+        photo_canvas.watermark_id = photo_canvas.create_image(x, (photo_canvas.winfo_height() - y), image=logo_photo,
+                                                              anchor="center")
+        create_bounding_box()
+    if tiling == "square":
+        tile_width = photo_canvas.winfo_width() * 2
+        tile_height = photo_canvas.winfo_height() * 2
+        tile_image = Image.new("RGBA", size=(tile_width, tile_height), color=(0, 0, 0, 0))
+        for y in range(0, tile_height, int(edited_logo_pillow.width * 1.5)):
+            for x in range(0, tile_width, int(edited_logo_pillow.width * 1.5)):
+                tile_image.paste(edited_logo_pillow, (x, y), edited_logo_pillow)
+        rotated_logo = apply_angle(tile_image, angle)
+        photo_canvas.logo_pillow = rotated_logo
+        logo_photo = ImageTk.PhotoImage(rotated_logo)
+        photo_canvas.watermark_image = logo_photo
+        photo_canvas.watermark_id = photo_canvas.create_image(0, 0, image=logo_photo,
+                                                              anchor="center")
+        create_bounding_box()
+
+    elif tiling == "diamond":
+        slide_line = True
+        tile_width = photo_canvas.winfo_width() * 2
+        tile_height = photo_canvas.winfo_height() * 3
+        tile_image = Image.new("RGBA", size=(tile_width, tile_height), color=(0, 0, 0, 0))
+        for y in range(0, tile_height, int(edited_logo_pillow.width * 1.5)):
+            if slide_line:
+                for x in range(int(edited_logo_pillow.width * .75), tile_width, int(edited_logo_pillow.width * 1.5)):
+                    tile_image.paste(edited_logo_pillow, (x, y), edited_logo_pillow)
+                slide_line = False
+            else:
+                for x in range(0, tile_width, int(edited_logo_pillow.width * 1.5)):
+                    tile_image.paste(edited_logo_pillow, (x, y), edited_logo_pillow)
+                slide_line = True
+        rotated_logo = apply_angle(tile_image, angle)
+        photo_canvas.logo_pillow = rotated_logo
+        logo_photo = ImageTk.PhotoImage(rotated_logo)
+        photo_canvas.watermark_image = logo_photo
+        photo_canvas.watermark_id = photo_canvas.create_image(
+            (photo_canvas.winfo_width() / 2), (photo_canvas.winfo_height() / 2), image=logo_photo,
+            anchor="center")
+        create_bounding_box()
+
 
 
 # Select a color for text or logo
@@ -449,7 +491,6 @@ def clicked_text(event):
         x1, y1, x2, y2 = bbox
         if event.x >= x1 and event.x <= x2 and event.y >= y1 and event.y <= y2:
             photo_canvas.tag_bind(photo_canvas.bbox_id, "<ButtonRelease-1>", move_clicked_text)
-            print("clicked text!")
 
 # Moves the text to the new space where the user released their mouse button
 def move_clicked_text(event):
