@@ -110,7 +110,6 @@ def watermark_options():
     add_text_button.grid(column=0, row=1, padx=75, pady=25)
     add_logo_button.grid(column=1, row=1, padx=75, pady=25)
 
-
 # Generates the text options window - Stores them in dictionary, passes to add_text() via text_submit button
 # Color gets passed separate from the dictionary as the askcolor box doesn't pass values the same way
 def text_options():
@@ -353,8 +352,6 @@ def logo_on_drop(event):
         else:
             messagebox.showerror("Invalid File", "You've selected an invalid file type. Please submit a PNG image.")
 
-
-
 # Generates the logo options window - Contains the window's widgets
 def logo_options():
     if photo_canvas.options_button:
@@ -491,8 +488,6 @@ def edit_logo(user_logo_selections):
             anchor="center")
         create_bounding_box()
 
-
-
 # Select a color for text or logo
 def select_color():
     global current_color
@@ -547,7 +542,6 @@ def undo_changes():
         photo_canvas.delete(photo_canvas.bbox_id)
     except AttributeError:
         pass
-
 
 # Save watermarked image
 def save_watermarked_image(): 
