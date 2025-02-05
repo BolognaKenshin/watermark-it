@@ -7,8 +7,9 @@ from PIL import Image, ImageTk, ImageDraw, ImageFont
 import magic
 
 main_window = TkinterDnD.Tk()
+main_window.configure(bg="#282928")
 main_window.title("Carl's Watermark App")
-main_window.minsize(width=1200, height=800)
+main_window.minsize(width=1200, height=850)
 
 current_color = (0, 0, 0, 255)
 
@@ -97,6 +98,7 @@ def on_drop(event, photo_canvas):
 # Generated the watermark options window, text or logo
 def watermark_options():
     watermark_window = tk.Toplevel(main_window)
+    watermark_window.configure(bg="#282928")
     watermark_window.minsize(width=200, height=50)
     watermark_window.title("Add Text or Logo")
     add_text_button = tk.Button(watermark_window,
@@ -114,15 +116,14 @@ def watermark_options():
 # Color gets passed separate from the dictionary as the askcolor box doesn't pass values the same way
 def text_options():
     global current_color
-    if photo_canvas.options_button:
-        photo_canvas.options_button.config(photo_canvas.options_button, text="Text Options", command=text_options)
-    else:
-        photo_canvas.options_button = tk.Button(main_window, text="Text Options", font=("Arial", 18), command=text_options)
-        photo_canvas.options_button.grid(column=1, row=4, pady=10)
+    photo_canvas.options_button.config(borderwidth=2, text="Text Options", font=("Arial", 18), width=12, height=1, command=text_options)
     if window_dict["watermark_window"]:
         window_dict["watermark_window"].destroy()
         window_dict["watermark_window"] = None
+    if window_dict["text_window"]:
+        window_dict["text_window"].destroy()
     text_window = tk.Toplevel(main_window)
+    text_window.configure(bg="#282928")
     window_dict["text_window"] = text_window
     text_window.title("Text Options")
     text_window.minsize(width=250, height=600)
@@ -308,6 +309,7 @@ def upload_logo_window():
         window_dict["watermark_window"].destroy()
         window_dict["watermark_window"] = None
     upload_logo_window = tk.Toplevel(main_window)
+    upload_logo_window.config(bg="#282928")
     window_dict["upload_logo_window"] = upload_logo_window
     upload_logo_window.minsize(width=500, height=250)
     upload_logo_window.title("Upload Logo")
@@ -357,12 +359,7 @@ def logo_on_drop(event):
 
 # Generates the logo options window - Contains the window's widgets
 def logo_options():
-    if photo_canvas.options_button:
-        photo_canvas.options_button.config(photo_canvas.options_button, text="Logo Options", command=logo_options)
-    else:
-        photo_canvas.options_button = tk.Button(main_window, text="Logo Options", font=("Arial", 18),
-                                                command=logo_options)
-        photo_canvas.options_button.grid(column=1, row=4, pady=10)
+    photo_canvas.options_button.config(borderwidth=2, text="Logo Options", font=("Arial", 18), width=12, height=1, command=logo_options)
     if window_dict["watermark_window"]:
         window_dict["watermark_window"].destroy()
         window_dict["watermark_window"] = None
@@ -372,7 +369,10 @@ def logo_options():
     if window_dict["text_window"]:
         window_dict["text_window"].destroy()
         window_dict["text_window"] = None
+    if window_dict["logo_window"]:
+        window_dict["logo_window"].destroy()
     logo_window = tk.Toplevel(main_window)
+    logo_window.configure(bg="#282928")
     logo_window.title("Logo Options")
     logo_window.minsize(width=250, height=600)
     logo_window.grid_columnconfigure(0, weight=1)
@@ -563,26 +563,28 @@ def save_watermarked_image():
 
 
 # Main App - Components
-my_label = tk.Label(text="Carl's Watermark App", font=("Arial", 24, "bold"))
+my_label = tk.Label(text="Watermark-It!", font=("Arial", 28, "bold"), bg="#282928", fg="white")
 landscape_image = Image.open("./sunset-golden.jpg")
 landscape_width, landscape_height = landscape_image.size
 landscape_photo = ImageTk.PhotoImage(landscape_image)
-drag_label = tk.Label(text="Drag your image", font=("Arial", 18))
-or_label = tk.Label(text="Or", font=("Arial", 12))
-photo_canvas = tk.Canvas(bg=None, width=landscape_width, height=landscape_height)
-upload_button = tk.Button(text="Upload", font=("Arial", 14), command=lambda: upload_image(photo_canvas))
+drag_label = tk.Label(text="Drag your image", font=("Arial", 18), bg="#282928", fg="white")
+or_label = tk.Label(text="Or", font=("Arial", 10), bg="#282928", fg="white")
+photo_canvas = tk.Canvas(width=landscape_width, height=landscape_height, bg="#282928", highlightthickness=2)
+upload_button = tk.Button(text="Upload", font=("Arial", 14), command=lambda: upload_image(photo_canvas), bg="#282928", fg="white")
 photo_canvas.image_id = photo_canvas.create_image(photo_canvas.winfo_width() / 2, photo_canvas.winfo_height() / 2, image=landscape_photo, anchor="nw")
+photo_canvas.options_button = tk.Button(borderwidth=0, bg="#282928", width=12, height=1, fg="white")
 
 photo_canvas.bbox_id = None
 photo_canvas.copyright = False
-photo_canvas.options_button = None
+
 
 # Main App - Grid
 # Note - Text options button is generated by/within the text_options and logo_options functions above
-my_label.grid(column=1, row=0)
+my_label.grid(column=1, row=0, pady=20)
 drag_label.grid(column=1, row=1)
 or_label.grid(column=1, row=2)
-upload_button.grid(column=1, row=3)
+upload_button.grid(column=1, row=3, pady=10)
+photo_canvas.options_button.grid(column=1, row=4, pady=10)
 photo_canvas.grid(column=1, row=5)
 
 
