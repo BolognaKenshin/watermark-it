@@ -7,10 +7,11 @@ from PIL import Image, ImageTk, ImageDraw, ImageFont
 import magic
 
 main_window = TkinterDnD.Tk()
+main_window.resizable(False, False)
 style = ttk.Style()
 main_window.configure(bg="#282928")
-main_window.title("Carl's Watermark App")
-main_window.minsize(width=1200, height=850)
+main_window.title("Watermark-It!")
+main_window.minsize(width=1200, height=880)
 
 current_color = (0, 0, 0, 255)
 
@@ -99,11 +100,12 @@ def on_drop(event, photo_canvas):
 # Generated the watermark options window, text or logo
 def watermark_options():
     watermark_window = tk.Toplevel(main_window)
+    watermark_window.resizable(False, False)
     watermark_window.configure(bg="#282928")
     watermark_window.minsize(width=200, height=50)
     watermark_window.title("Add Text or Logo")
-    add_text_button = tk.Button(watermark_window, text="Add Text", bg="#282928", fg="white", font=("Arial", 14), command=text_options)
-    add_logo_button = tk.Button(watermark_window,text="Add Logo", bg="#282928", fg="white", font=("Arial", 14,), command=upload_logo_window)
+    add_text_button = tk.Button(watermark_window, text="Add Text", bg="#282928", fg="white", bd=3, font=("Arial", 14), command=text_options)
+    add_logo_button = tk.Button(watermark_window,text="Add Logo", bg="#282928", fg="white", bd=3, font=("Arial", 14,), command=upload_logo_window)
     window_dict["watermark_window"] = watermark_window
     add_text_button.grid(column=0, row=1, padx=75, pady=25)
     add_logo_button.grid(column=1, row=1, padx=75, pady=25)
@@ -113,42 +115,45 @@ def watermark_options():
 # Color gets passed separate from the dictionary as the askcolor box doesn't pass values the same way
 def text_options():
     global current_color
-    photo_canvas.options_button.config(borderwidth=2, text="Text Options", font=("Arial", 14), width=12, height=1, command=text_options)
+    photo_canvas.options_button.config(text="Text Options", font=("Arial", 14), width=12, height=1, bd=3, command=text_options)
     if window_dict["watermark_window"]:
         window_dict["watermark_window"].destroy()
         window_dict["watermark_window"] = None
     if window_dict["text_window"]:
         window_dict["text_window"].destroy()
     text_window = tk.Toplevel(main_window)
+    text_window.resizable(False, False)
     text_window.grid_columnconfigure(index=0, weight=1)
     text_window.grid_columnconfigure(index=1, weight=1)
     text_window.configure(bg="#282928")
     window_dict["text_window"] = text_window
     text_window.title("Text Options")
-    text_window.minsize(width=250, height=600)
+    text_window.minsize(width=250, height=650)
 
     # Text Entry - Position
     text_entry_label = tk.Label(text_window, text="Input Text", font=("Arial", 11), bg="#282928", fg="white")
     text_box = tk.Entry(text_window, bg="#282928", fg="white",  insertbackground="white", highlightthickness=2, bd=0)
-    text_entry_label.grid(row=0, column=0, sticky="w", padx=7, pady=10)
-    text_box.grid(row=1, column=0, sticky="w", padx=10)
+    text_entry_label.grid(row=0, column=0, sticky="w", padx=7, pady=(20, 10))
+    text_box.grid(row=1, column=0, sticky="w", padx=(10, 20))
     text_submit = tk.Button(text_window,
                             text="Add Text",
                             bg="#282928",
                             fg="white",
+                            bd = 3,
+                            font=("Arial", 10),
                             command=lambda: add_text(user_text_selections,
                                                      current_color,
                                                      available_fonts,
                                                      font_display_names))
-    text_submit.grid(row=2, column=0, sticky="w", pady=10, padx=10)
-    copyright_button = tk.Button(text_window, text="Add ©", bg="#282928", fg="white", command=lambda: add_copyright(text_box))
-    copyright_button.grid(row=2, column=0, padx=10, pady=10, sticky="e")
+    text_submit.grid(row=2, column=0, sticky="w", pady=(20, 10), padx=10)
+    copyright_button = tk.Button(text_window, text="Add ©", bg="#282928", fg="white", bd=3, font=("Arial", 10), command=lambda: add_copyright(text_box))
+    copyright_button.grid(row=2, column=0, padx=10, pady=(20, 10), sticky="e")
 
 
     text_x_label = tk.Label(text_window, text="X Coordinates", font=("Arial", 11), bg="#282928", fg="white")
-    text_x_slider = tk.Scale(text_window, from_=0, to=photo_canvas.winfo_width(), orient="horizontal", bg="#282928", troughcolor="#282928", bd=0, showvalue=False)
+    text_x_slider = tk.Scale(text_window, from_=0, to=photo_canvas.winfo_width(), orient="horizontal", bg="#282928", troughcolor="#282928", highlightthickness=2, bd=0, showvalue=False)
     text_y_label = tk.Label(text_window, text="Y Coordinates", font=("Arial", 11), bg="#282928", fg="white")
-    text_y_slider = tk.Scale(text_window, from_=6, to=photo_canvas.winfo_height(), orient="horizontal", bg="#282928", troughcolor="#282928", bd=0, showvalue=False)
+    text_y_slider = tk.Scale(text_window, from_=6, to=photo_canvas.winfo_height(), orient="horizontal", bg="#282928", troughcolor="#282928", highlightthickness=2, bd=0, showvalue=False)
     text_x_label.grid(row=3, column=0, sticky="w", padx=10)
     text_x_slider.grid(row=4, column=0, sticky="w", padx=10, pady=10)
     text_y_label.grid(row=3, column=1, sticky="w", padx=10)
@@ -157,35 +162,39 @@ def text_options():
     # Font Selection
     style.theme_use('clam')
 
-    style.configure("TCombobox", fieldbackground="#282928", selectbackground="#282928", foreground="white", arrowcolor="#282928", background="white")
+    style.configure("TCombobox", selectbackground="#282928", foreground="white", arrowcolor="white", background="#282928")
     style.configure("TScrollbar",
-                    background="white",  # Scrollbar background color
-                    troughcolor="#282928",  # Color of the trough (the area the thumb moves within)
-                    slidercolor="white")
+                    background="#282928",  # Scrollbar background color
+                    troughcolor="#282928",
+                    slidercolor="white",
+                    arrowcolor="white")
     style.map("TCombobox", fieldbackground=[('readonly', '#282928')])
     text_window.option_add('*TCombobox*Listbox.background', '#282928')  # Dropdown background
     text_window.option_add('*TCombobox*Listbox.foreground', 'white')
     fonts_label = tk.Label(text_window, text="Font Selection", font=("Arial", 11), bg="#282928", fg="white")
     available_fonts = [font for font in os.listdir("./fonts") if font.endswith((".ttf", ".otf"))]
     font_display_names = [font.replace(".ttf", "").replace(".otf", "") for font in available_fonts]
-    font_menu = ttk.Combobox(text_window, values=font_display_names, height=10, background="#282928", style="TCombobox", state="readonly")
+    font_menu_frame = tk.Frame(text_window, highlightcolor="white", highlightthickness=2)
+    font_menu = ttk.Combobox(font_menu_frame, values=font_display_names, height=10, state="readonly")
     for font in available_fonts:
         font_menu.insert(tk.END, font)
     font_menu.set("Boldness")
     font_sizes = [f'{str(size)}px' for size in range(10, 401, 2)]
-
-    font_size_menu = ttk.Combobox(text_window, values=font_sizes, height=10,  state="readonly", style="TCombobox")
+    font_size_menu_frame = tk.Frame(text_window, highlightcolor="white", highlightthickness=2)
+    font_size_menu = ttk.Combobox(font_size_menu_frame, values=font_sizes, height=10,  state="readonly")
     font_size_menu.set("14px")
     fonts_label.grid(row=7, column=0, sticky="w", padx=7)
-    font_menu.grid(row=8, column=0, sticky="w", padx=10, pady=10)
+    font_menu_frame.grid(row=8, column=0, sticky="w", padx=10, pady=10)
+    font_menu.pack()
 
-    font_size_menu.grid(row=9, column=0, padx=10)
+    font_size_menu_frame.grid(row=9, column=0, padx=10, pady=(10, 0))
+    font_size_menu.pack()
 
     # Tiling
     tiling_options_label = tk.Label(text_window, text="Tiling Options", font=("Arial", 11), bg="#282928", fg="white")
-    single_tile_button = tk.Button(text_window, text="•", font=(20), width=4, height=2, command=lambda: user_text_selections.update({"tiling": "single"}))
-    square_tile_button = tk.Button(text_window, text="•   •\n•   •", font=(20), width=4, height=2, command=lambda: user_text_selections.update({"tiling": "square"}))
-    diamond_tile_button = tk.Button(text_window, text="•\n•       •\n•", font=(20), width=4, height=2, command=lambda: user_text_selections.update({"tiling": "diamond"}))
+    single_tile_button = tk.Button(text_window, text="•", font=(20), width=4, height=2,  bg="#282928", fg="white", bd=3, command=lambda: user_text_selections.update({"tiling": "single"}))
+    square_tile_button = tk.Button(text_window, text="•   •\n•   •", font=(20), width=4, height=2,  bg="#282928", bd=3, fg="white", command=lambda: user_text_selections.update({"tiling": "square"}))
+    diamond_tile_button = tk.Button(text_window, text="•\n•       •\n•", font=(20), width=4, height=2,  bg="#282928", bd=3, fg="white", command=lambda: user_text_selections.update({"tiling": "diamond"}))
     tiling_options_label.grid(row=10, column=0, sticky="w", padx=7, pady=15)
     single_tile_button.grid(row=11, column=0, sticky="w", padx=10)
     square_tile_button.grid(row=11, column=0, sticky="e", padx=25)
@@ -193,22 +202,22 @@ def text_options():
 
     # Text Rotation
     text_angle_label = tk.Label(text_window, text="Text Angle", font=("Arial", 11), bg="#282928", fg="white")
-    text_angle_slider = tk.Scale(text_window, from_=-180, to=180, orient="horizontal")
+    text_angle_slider = tk.Scale(text_window, from_=-180, to=180, orient="horizontal", bg="#282928", fg="white", highlightthickness=2, bd=0, troughcolor="#282928", showvalue=False)
     text_angle_label.grid(row=12, column=0, padx=7, pady=10, sticky="w")
     text_angle_slider.grid(row=13, column=0, padx=10, sticky="w")
 
     # Color - Opacity Selection - Updates global current_color variable, passes it to add_text() in text_submit button
-    add_color_button = tk.Button(text_window, text="Color Options", command=select_color)
-    add_color_button.grid(row=14, column=0, sticky="w", padx=10, pady=15)
+    add_color_button = tk.Button(text_window, text="Color Options", bg="#282928", fg="white", font=("Arial", 10), bd=3, command=select_color)
+    add_color_button.grid(row=14, column=0, sticky="w", padx=10, pady=(15, 10))
     opacity_label = tk.Label(text_window, text="Opacity", font=("Arial", 11), bg="#282928", fg="white")
-    opacity_slider = tk.Scale(text_window, from_=0, to=255, orient="horizontal", showvalue=False)
+    opacity_slider = tk.Scale(text_window, from_=0, to=255, orient="horizontal", bg="#282928", troughcolor="#282928", highlightthickness=2, bd=0, showvalue=False)
     opacity_slider.set(255)
-    opacity_label.grid(row=15, column=0, sticky="w", padx=7)
-    opacity_slider.grid(row=16, column=0, sticky="w", padx=10, pady=10)
-    save_image_button = tk.Button(text_window, text="Save Image", command=save_watermarked_image)
-    save_image_button.grid(row=17, column=0, sticky="w", padx=10, pady=20)
-    undo_changes_button = tk.Button(text_window, text="Undo Changes", command=undo_changes)
-    undo_changes_button.grid(row=17, column=1, sticky="w", padx=10, pady=20)
+    opacity_label.grid(row=15, column=0, sticky="w", padx=7, pady=(0, 10))
+    opacity_slider.grid(row=16, column=0, sticky="w", padx=10, pady=(0, 10))
+    save_image_button = tk.Button(text_window, text="Save Image", bg="#282928", fg="white", font=("Arial", 10), bd=3, command=save_watermarked_image)
+    save_image_button.grid(row=17, column=0, sticky="w", padx=10, pady=10)
+    undo_changes_button = tk.Button(text_window, text="Undo Changes", bg="#282928", fg="white", font=("Arial", 10), bd=3, command=undo_changes)
+    undo_changes_button.grid(row=17, column=1, sticky="w", padx=10, pady=10)
 
     # Stores the widgets as values, so they can be passed to add_text and retrieved via .get()
     # Button widget values aren't passed via this dictionary
@@ -329,6 +338,7 @@ def upload_logo_window():
         window_dict["watermark_window"].destroy()
         window_dict["watermark_window"] = None
     upload_logo_window = tk.Toplevel(main_window)
+    upload_logo_window.resizable(False, False)
     upload_logo_window.grid_columnconfigure(index=0, weight=1)
     upload_logo_window.config(bg="#282928")
     window_dict["upload_logo_window"] = upload_logo_window
@@ -336,10 +346,10 @@ def upload_logo_window():
     upload_logo_window.title("Upload Logo")
     drag_label = tk.Label(upload_logo_window, text="Drag your logo here", font=("Arial", 14), bg="#282928", fg="white")
     or_label = tk.Label(upload_logo_window, text="Or", font=("Arial", 10), bg="#282928", fg="white")
-    logo_upload = tk.Button(upload_logo_window, text="Upload", bg="#282928", fg="white", command=upload_logo)
-    drag_label.grid(row=0, column=0)
-    or_label.grid(row=1, column=0)
-    logo_upload.grid(row=2, column=0)
+    logo_upload = tk.Button(upload_logo_window, text="Upload", font=("Arial", 14), bg="#282928", fg="white", bd=3, command=upload_logo)
+    drag_label.grid(row=1, column=0, sticky="s", pady=(50, 10))
+    or_label.grid(row=2, column=0)
+    logo_upload.grid(row=3, column=0, sticky="n", pady=(20, 50))
     upload_logo_window.drop_target_register(DND_FILES)
     upload_logo_window.dnd_bind('<<Drop>>', lambda event: logo_on_drop(event))
     upload_logo_window.grab_set()
@@ -380,7 +390,7 @@ def logo_on_drop(event):
 
 # Generates the logo options window - Contains the window's widgets
 def logo_options():
-    photo_canvas.options_button.config(borderwidth=2, text="Logo Options", font=("Arial", 14), width=12, height=1, command=logo_options)
+    photo_canvas.options_button.config(borderwidth=2, text="Logo Options", font=("Arial", 14), width=12, height=1, bd=3, command=logo_options)
     if window_dict["watermark_window"]:
         window_dict["watermark_window"].destroy()
         window_dict["watermark_window"] = None
@@ -393,45 +403,45 @@ def logo_options():
     if window_dict["logo_window"]:
         window_dict["logo_window"].destroy()
     logo_window = tk.Toplevel(main_window)
+    logo_window.resizable(False, False)
+    logo_window.grid_columnconfigure(index=0, weight=1)
+    logo_window.grid_columnconfigure(index=1, weight=1)
     logo_window.configure(bg="#282928")
     logo_window.title("Logo Options")
-    logo_window.minsize(width=250, height=600)
-    logo_window.grid_columnconfigure(0, weight=1)
-    logo_window.grid_columnconfigure(1, weight=1)
-    logo_window.grid_columnconfigure(2, weight=1)
+    logo_window.minsize(width=250, height=550)
     window_dict["logo_window"] = logo_window
-    size_label = tk.Label(logo_window, text="Logo Size")
-    logo_size_scale = tk.Scale(logo_window, from_=-500, to=500, length=150, orient="horizontal")
+    size_label = tk.Label(logo_window, text="Logo Size", font=("Arial", 11), bg="#282928", fg="white")
+    logo_size_scale = tk.Scale(logo_window, bg="#282928", troughcolor="#282928", highlightthickness=2, bd=0, from_=-500, to=500, length=150, orient="horizontal", showvalue=False)
     logo_size_scale.set(0)
-    size_label.grid(row=0, column=1)
-    logo_size_scale.grid(row=1, column=1, padx=50)
+    size_label.grid(row=0, column=0, sticky="w", padx=7, pady=(30, 10))
+    logo_size_scale.grid(row=1, column=0, sticky="w", padx=10)
 
-    logo_x_label = tk.Label(logo_window, text="X Coordinates")
-    logo_x_slider = tk.Scale(logo_window, from_=0, to=photo_canvas.winfo_width(), orient="horizontal", showvalue=False)
-    logo_y_label = tk.Label(logo_window, text="Y Coordinates")
-    logo_y_slider = tk.Scale(logo_window, from_=0, to=photo_canvas.winfo_height(), orient="horizontal", showvalue=False)
-    logo_x_label.grid(row=2, column=1)
-    logo_x_slider.grid(row=3, column=1, padx=75)
-    logo_y_label.grid(row=4, column=1)
-    logo_y_slider.grid(row=5, column=1, padx=75)
+    logo_x_label = tk.Label(logo_window, text="X Coordinates", font=("Arial", 11), bg="#282928", fg="white")
+    logo_x_slider = tk.Scale(logo_window, from_=0, to=photo_canvas.winfo_width(), bg="#282928", troughcolor="#282928", highlightthickness=2, bd=0, orient="horizontal", showvalue=False)
+    logo_y_label = tk.Label(logo_window, text="Y Coordinates", font=("Arial", 11), bg="#282928", fg="white")
+    logo_y_slider = tk.Scale(logo_window, from_=0, to=photo_canvas.winfo_height(), bg="#282928", troughcolor="#282928", highlightthickness=2, bd=0, orient="horizontal", showvalue=False)
+    logo_x_label.grid(row=2, column=0, sticky="w", padx=7, pady=10)
+    logo_x_slider.grid(row=3, column=0, sticky="w", padx=10)
+    logo_y_label.grid(row=4, column=0, sticky="w", padx=7, pady=10)
+    logo_y_slider.grid(row=5, column=0, sticky="w", padx=10)
 
-    logo_angle_label = tk.Label(logo_window, text="Text Angle")
-    logo_angle_slider = tk.Scale(logo_window, from_=-180, to=180, orient="horizontal")
-    logo_angle_label.grid(row=6, column=1)
-    logo_angle_slider .grid(row=7, column=1)
+    logo_angle_label = tk.Label(logo_window, text="Logo Angle", font=("Arial", 11), bg="#282928", fg="white")
+    logo_angle_slider = tk.Scale(logo_window, bg="#282928", troughcolor="#282928", highlightthickness=2, bd=0, from_=-180, to=180, orient="horizontal", showvalue=False)
+    logo_angle_label.grid(row=6, column=0, sticky="w", padx=7, pady=10)
+    logo_angle_slider .grid(row=7, column=0, sticky="w", padx=10)
 
-    single_tile_button = tk.Button(logo_window, text="•", font=(20), width=4, height=2, command=lambda: user_logo_selections.update({"tiling": "single"}))
-    square_tile_button = tk.Button(logo_window, text="•   •\n•   •", font=(20), width=4, height=2, command=lambda: user_logo_selections.update({"tiling": "square"}))
-    diamond_tile_button = tk.Button(logo_window, text="•\n•       •\n•", font=(20), width=4, height=2, command=lambda: user_logo_selections.update({"tiling": "diamond"}))
-    single_tile_button.grid(row=8, column=1, pady=10, sticky="W")
-    square_tile_button.grid(row=8, column=1, padx=5, pady=10)
-    diamond_tile_button.grid(row=8, column=1, pady=10, sticky="E")
-    undo_changes_button = tk.Button(logo_window, text="Undo Changes", command=undo_changes)
-    undo_changes_button.grid(row=9, column=1, padx=10, pady=10)
-    save_image_button = tk.Button(logo_window, text="Save Image", command=save_watermarked_image)
-    save_image_button.grid(row=10, column=1, padx=10, pady=10)
-    apply_changes_button = tk.Button(logo_window, text="Apply Changes", command=lambda: edit_logo(user_logo_selections))
-    apply_changes_button.grid(row=11, column=1, padx=10, pady=10)
+    single_tile_button = tk.Button(logo_window, text="•", font=(20), width=4, height=2, bg="#282928", fg="white", bd=3, command=lambda: user_logo_selections.update({"tiling": "single"}))
+    square_tile_button = tk.Button(logo_window, text="•   •\n•   •", font=(20), width=4, height=2, bg="#282928", fg="white", bd=3, command=lambda: user_logo_selections.update({"tiling": "square"}))
+    diamond_tile_button = tk.Button(logo_window, text="•\n•       •\n•", font=(20), width=4, height=2, bg="#282928", fg="white", bd=3, command=lambda: user_logo_selections.update({"tiling": "diamond"}))
+    single_tile_button.grid(row=8, column=0, sticky="w", padx=10, pady=20)
+    square_tile_button.grid(row=8, column=0, sticky="e", padx=30, pady=20)
+    diamond_tile_button.grid(row=8, column=1, sticky="w", padx=10, pady=20)
+    undo_changes_button = tk.Button(logo_window, text="Undo Changes", font=("Arial", 10), bg="#282928", fg="white", bd=3, command=undo_changes)
+    undo_changes_button.grid(row=9, column=0, sticky="w", padx=10)
+    apply_changes_button = tk.Button(logo_window, text="Apply Changes", font=("Arial", 10), bg="#282928", fg="white", bd=3, command=lambda: edit_logo(user_logo_selections))
+    apply_changes_button.grid(row=10, column=0, sticky="w", padx=10, pady=20)
+    save_image_button = tk.Button(logo_window, text="Save Image", font=("Arial", 10), bg="#282928", fg="white", bd=3, command=save_watermarked_image)
+    save_image_button.grid(row=11, column=0, sticky="w", padx=10)
 
 
     user_logo_selections = {"angle": logo_angle_slider,
@@ -591,7 +601,7 @@ landscape_photo = ImageTk.PhotoImage(landscape_image)
 drag_label = tk.Label(text="Drag your image", font=("Arial", 18), bg="#282928", fg="white")
 or_label = tk.Label(text="Or", font=("Arial", 10), bg="#282928", fg="white")
 photo_canvas = tk.Canvas(width=landscape_width, height=landscape_height, bg="#282928", highlightthickness=2)
-upload_button = tk.Button(text="Upload", font=("Arial", 14), command=lambda: upload_image(photo_canvas), bg="#282928", fg="white")
+upload_button = tk.Button(text="Upload", font=("Arial", 14), command=lambda: upload_image(photo_canvas), bg="#282928", fg="white", bd=3)
 photo_canvas.image_id = photo_canvas.create_image(photo_canvas.winfo_width() / 2, photo_canvas.winfo_height() / 2, image=landscape_photo, anchor="nw")
 photo_canvas.options_button = tk.Button(borderwidth=0, bg="#282928", width=12, height=2, fg="white")
 
@@ -603,7 +613,7 @@ photo_canvas.copyright = False
 # Note - Text options button is generated by/within the text_options and logo_options functions above
 my_label.grid(column=1, row=0, pady=20)
 drag_label.grid(column=1, row=1)
-or_label.grid(column=1, row=2, pady=10)
+or_label.grid(column=1, row=2, pady=(10, 20))
 upload_button.grid(column=1, row=3)
 photo_canvas.options_button.grid(column=1, row=4, pady=10)
 photo_canvas.grid(column=1, row=5)
