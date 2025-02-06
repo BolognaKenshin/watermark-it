@@ -7,6 +7,7 @@ from PIL import Image, ImageTk, ImageDraw, ImageFont
 import magic
 
 main_window = TkinterDnD.Tk()
+style = ttk.Style()
 main_window.configure(bg="#282928")
 main_window.title("Carl's Watermark App")
 main_window.minsize(width=1200, height=850)
@@ -128,7 +129,7 @@ def text_options():
 
     # Text Entry - Position
     text_entry_label = tk.Label(text_window, text="Input Text", font=("Arial", 11), bg="#282928", fg="white")
-    text_box = tk.Entry(text_window, bg="#282928", fg="white",  insertbackground="white")
+    text_box = tk.Entry(text_window, bg="#282928", fg="white",  insertbackground="white", highlightthickness=2, bd=0)
     text_entry_label.grid(row=0, column=0, sticky="w", padx=7, pady=10)
     text_box.grid(row=1, column=0, sticky="w", padx=10)
     text_submit = tk.Button(text_window,
@@ -142,27 +143,39 @@ def text_options():
     text_submit.grid(row=2, column=0, sticky="w", pady=10, padx=10)
     copyright_button = tk.Button(text_window, text="Add ©", bg="#282928", fg="white", command=lambda: add_copyright(text_box))
     copyright_button.grid(row=2, column=0, padx=10, pady=10, sticky="e")
-    font_sizes = [f'{str(size)}px' for size in range(10, 401, 2)]
-    font_size_menu = ttk.Combobox(text_window, values=font_sizes, height=10, state="readonly")
-    font_size_menu.set("14px")
+
 
     text_x_label = tk.Label(text_window, text="X Coordinates", font=("Arial", 11), bg="#282928", fg="white")
-    text_x_slider = tk.Scale(text_window, from_=0, to=photo_canvas.winfo_width(), orient="horizontal", showvalue=False)
+    text_x_slider = tk.Scale(text_window, from_=0, to=photo_canvas.winfo_width(), orient="horizontal", bg="#282928", troughcolor="#282928", bd=0, showvalue=False)
     text_y_label = tk.Label(text_window, text="Y Coordinates", font=("Arial", 11), bg="#282928", fg="white")
-    text_y_slider = tk.Scale(text_window, from_=6, to=photo_canvas.winfo_height(), orient="horizontal", showvalue=False)
+    text_y_slider = tk.Scale(text_window, from_=6, to=photo_canvas.winfo_height(), orient="horizontal", bg="#282928", troughcolor="#282928", bd=0, showvalue=False)
     text_x_label.grid(row=3, column=0, sticky="w", padx=10)
     text_x_slider.grid(row=4, column=0, sticky="w", padx=10, pady=10)
     text_y_label.grid(row=3, column=1, sticky="w", padx=10)
     text_y_slider.grid(row=4, column=1, sticky="w", padx=10, pady=10)
 
     # Font Selection
+    style.theme_use('clam')
+
+    style.configure("TCombobox", fieldbackground="#282928", selectbackground="#282928", foreground="white", arrowcolor="#282928", background="white")
+    style.configure("TScrollbar",
+                    background="white",  # Scrollbar background color
+                    troughcolor="#282928",  # Color of the trough (the area the thumb moves within)
+                    slidercolor="white")
+    style.map("TCombobox", fieldbackground=[('readonly', '#282928')])
+    text_window.option_add('*TCombobox*Listbox.background', '#282928')  # Dropdown background
+    text_window.option_add('*TCombobox*Listbox.foreground', 'white')
     fonts_label = tk.Label(text_window, text="Font Selection", font=("Arial", 11), bg="#282928", fg="white")
     available_fonts = [font for font in os.listdir("./fonts") if font.endswith((".ttf", ".otf"))]
     font_display_names = [font.replace(".ttf", "").replace(".otf", "") for font in available_fonts]
-    font_menu = ttk.Combobox(text_window, values=font_display_names, height=10, state="readonly")
+    font_menu = ttk.Combobox(text_window, values=font_display_names, height=10, background="#282928", style="TCombobox", state="readonly")
     for font in available_fonts:
         font_menu.insert(tk.END, font)
     font_menu.set("Boldness")
+    font_sizes = [f'{str(size)}px' for size in range(10, 401, 2)]
+
+    font_size_menu = ttk.Combobox(text_window, values=font_sizes, height=10,  state="readonly", style="TCombobox")
+    font_size_menu.set("14px")
     fonts_label.grid(row=7, column=0, sticky="w", padx=7)
     font_menu.grid(row=8, column=0, sticky="w", padx=10, pady=10)
 
