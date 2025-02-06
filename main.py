@@ -119,72 +119,83 @@ def text_options():
     if window_dict["text_window"]:
         window_dict["text_window"].destroy()
     text_window = tk.Toplevel(main_window)
+    text_window.grid_columnconfigure(index=0, weight=1)
+    text_window.grid_columnconfigure(index=1, weight=1)
     text_window.configure(bg="#282928")
     window_dict["text_window"] = text_window
     text_window.title("Text Options")
     text_window.minsize(width=250, height=600)
 
     # Text Entry - Position
-    text_box = tk.Entry(text_window)
-    text_box.grid(row=0, column=0, sticky="w", padx=10)
-    text_submit = tk.Button(text_window, text="Add Text", command=lambda: add_text(user_text_selections,
-                                                                                   current_color,
-                                                                                   available_fonts,
-                                                                                   font_display_names))
-    text_submit.grid(row=0, column=1, sticky="w", padx=10)
-    copyright_button = tk.Button(text_window, text="Add ©", command=lambda: add_copyright(text_box))
-    copyright_button.grid(row=1, column=1, sticky="w", padx=10)
+    text_entry_label = tk.Label(text_window, text="Input Text", font=("Arial", 11), bg="#282928", fg="white")
+    text_box = tk.Entry(text_window, bg="#282928", fg="white",  insertbackground="white")
+    text_entry_label.grid(row=0, column=0, sticky="w", padx=7, pady=10)
+    text_box.grid(row=1, column=0, sticky="w", padx=10)
+    text_submit = tk.Button(text_window,
+                            text="Add Text",
+                            bg="#282928",
+                            fg="white",
+                            command=lambda: add_text(user_text_selections,
+                                                     current_color,
+                                                     available_fonts,
+                                                     font_display_names))
+    text_submit.grid(row=2, column=0, sticky="w", pady=10, padx=10)
+    copyright_button = tk.Button(text_window, text="Add ©", bg="#282928", fg="white", command=lambda: add_copyright(text_box))
+    copyright_button.grid(row=2, column=0, padx=10, pady=10, sticky="e")
     font_sizes = [f'{str(size)}px' for size in range(10, 401, 2)]
     font_size_menu = ttk.Combobox(text_window, values=font_sizes, height=10, state="readonly")
     font_size_menu.set("14px")
 
-    text_x_label = tk.Label(text_window, text="X Coordinates")
+    text_x_label = tk.Label(text_window, text="X Coordinates", font=("Arial", 11), bg="#282928", fg="white")
     text_x_slider = tk.Scale(text_window, from_=0, to=photo_canvas.winfo_width(), orient="horizontal", showvalue=False)
-    text_y_label = tk.Label(text_window, text="Y Coordinates")
+    text_y_label = tk.Label(text_window, text="Y Coordinates", font=("Arial", 11), bg="#282928", fg="white")
     text_y_slider = tk.Scale(text_window, from_=6, to=photo_canvas.winfo_height(), orient="horizontal", showvalue=False)
-    text_x_label.grid(row=1, column=0, sticky="w", padx=10)
-    text_x_slider.grid(row=2, column=0, sticky="w", padx=10)
-    text_y_label.grid(row=3, column=0, sticky="w", padx=10)
-    text_y_slider.grid(row=4, column=0, sticky="w", padx=10)
+    text_x_label.grid(row=3, column=0, sticky="w", padx=10)
+    text_x_slider.grid(row=4, column=0, sticky="w", padx=10, pady=10)
+    text_y_label.grid(row=3, column=1, sticky="w", padx=10)
+    text_y_slider.grid(row=4, column=1, sticky="w", padx=10, pady=10)
 
     # Font Selection
+    fonts_label = tk.Label(text_window, text="Font Selection", font=("Arial", 11), bg="#282928", fg="white")
     available_fonts = [font for font in os.listdir("./fonts") if font.endswith((".ttf", ".otf"))]
     font_display_names = [font.replace(".ttf", "").replace(".otf", "") for font in available_fonts]
     font_menu = ttk.Combobox(text_window, values=font_display_names, height=10, state="readonly")
     for font in available_fonts:
         font_menu.insert(tk.END, font)
     font_menu.set("Boldness")
-    font_menu.grid(row=5, column=0, sticky="w", padx=10, pady=15)
+    fonts_label.grid(row=7, column=0, sticky="w", padx=7)
+    font_menu.grid(row=8, column=0, sticky="w", padx=10, pady=10)
 
-    font_size_menu.grid(row=6, column=0, padx=10)
+    font_size_menu.grid(row=9, column=0, padx=10)
 
     # Tiling
-
+    tiling_options_label = tk.Label(text_window, text="Tiling Options", font=("Arial", 11), bg="#282928", fg="white")
     single_tile_button = tk.Button(text_window, text="•", font=(20), width=4, height=2, command=lambda: user_text_selections.update({"tiling": "single"}))
     square_tile_button = tk.Button(text_window, text="•   •\n•   •", font=(20), width=4, height=2, command=lambda: user_text_selections.update({"tiling": "square"}))
     diamond_tile_button = tk.Button(text_window, text="•\n•       •\n•", font=(20), width=4, height=2, command=lambda: user_text_selections.update({"tiling": "diamond"}))
-    single_tile_button.grid(row=7, column=0, padx=10, pady=10)
-    square_tile_button.grid(row=7, column=1, padx=10, pady=10)
-    diamond_tile_button.grid(row=7, column=2, padx=10, pady=10)
+    tiling_options_label.grid(row=10, column=0, sticky="w", padx=7, pady=15)
+    single_tile_button.grid(row=11, column=0, sticky="w", padx=10)
+    square_tile_button.grid(row=11, column=0, sticky="e", padx=25)
+    diamond_tile_button.grid(row=11, column=1, sticky="w", padx=10)
 
     # Text Rotation
-    text_angle_label = tk.Label(text_window, text="Text Angle")
+    text_angle_label = tk.Label(text_window, text="Text Angle", font=("Arial", 11), bg="#282928", fg="white")
     text_angle_slider = tk.Scale(text_window, from_=-180, to=180, orient="horizontal")
-    text_angle_label.grid(row=8, column=0, padx=10, sticky="w")
-    text_angle_slider.grid(row=9, column=0, padx=10, sticky="w")
+    text_angle_label.grid(row=12, column=0, padx=7, pady=10, sticky="w")
+    text_angle_slider.grid(row=13, column=0, padx=10, sticky="w")
 
     # Color - Opacity Selection - Updates global current_color variable, passes it to add_text() in text_submit button
-    add_color_button = tk.Button(text_window, text="Add Color", command=select_color)
-    add_color_button.grid(row=10, column=0, sticky="w", padx=10, pady=15)
-    opacity_label = tk.Label(text_window, text="Opacity")
+    add_color_button = tk.Button(text_window, text="Color Options", command=select_color)
+    add_color_button.grid(row=14, column=0, sticky="w", padx=10, pady=15)
+    opacity_label = tk.Label(text_window, text="Opacity", font=("Arial", 11), bg="#282928", fg="white")
     opacity_slider = tk.Scale(text_window, from_=0, to=255, orient="horizontal", showvalue=False)
     opacity_slider.set(255)
-    opacity_label.grid(row=11, column=0, sticky="w", padx=10)
-    opacity_slider.grid(row=12, column=0, sticky="w", padx=10)
+    opacity_label.grid(row=15, column=0, sticky="w", padx=7)
+    opacity_slider.grid(row=16, column=0, sticky="w", padx=10, pady=10)
     save_image_button = tk.Button(text_window, text="Save Image", command=save_watermarked_image)
-    save_image_button.grid(row=13, column=0, sticky="w", padx=10, pady=10)
+    save_image_button.grid(row=17, column=0, sticky="w", padx=10, pady=20)
     undo_changes_button = tk.Button(text_window, text="Undo Changes", command=undo_changes)
-    undo_changes_button.grid(row=13, column=1, sticky="w", padx=10, pady=10)
+    undo_changes_button.grid(row=17, column=1, sticky="w", padx=10, pady=20)
 
     # Stores the widgets as values, so they can be passed to add_text and retrieved via .get()
     # Button widget values aren't passed via this dictionary
