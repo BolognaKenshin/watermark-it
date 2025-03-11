@@ -156,6 +156,7 @@ def text_options():
     text_y_slider = tk.Scale(text_window, from_=6, to=photo_canvas.winfo_height(), orient="horizontal", bg="#282928", troughcolor="#282928", highlightthickness=2, bd=0, showvalue=False)
     text_x_label.grid(row=3, column=0, sticky="w", padx=10)
     text_x_slider.grid(row=4, column=0, sticky="w", padx=10, pady=10)
+    text_x_slider.grid(row=4, column=0, sticky="w", padx=10, pady=10)
     text_y_label.grid(row=3, column=1, sticky="w", padx=10)
     text_y_slider.grid(row=4, column=1, sticky="w", padx=10, pady=10)
 
@@ -179,10 +180,10 @@ def text_options():
     for font in available_fonts:
         font_menu.insert(tk.END, font)
     font_menu.set("Boldness")
-    font_sizes = [f'{str(size)}px' for size in range(10, 401, 2)]
+    font_sizes = [f'{str(size)}pt' for size in range(10, 401, 2)]
     font_size_menu_frame = tk.Frame(text_window, highlightcolor="white", highlightthickness=2)
     font_size_menu = ttk.Combobox(font_size_menu_frame, values=font_sizes, height=10,  state="readonly")
-    font_size_menu.set("14px")
+    font_size_menu.set("14pt")
     fonts_label.grid(row=7, column=0, sticky="w", padx=7)
     font_menu_frame.grid(row=8, column=0, sticky="w", padx=10, pady=10)
     font_menu.pack()
@@ -251,7 +252,7 @@ def add_text(text_options, current_color, fonts, font_display_names):
     font = text_options["font"].get()
     x = text_options["x"].get()
     y = text_options["y"].get()
-    font_size = int(text_options["font_size"].get().strip("px"))
+    font_size = int(text_options["font_size"].get().strip("pt"))
     angle = int(text_options["angle"].get())
     opacity = text_options["opacity"].get()
     photo_canvas.opacity = opacity
